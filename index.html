@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="StockFlow Pro" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#f8fafc" id="metaThemeColor" />
+  <title>StockFlow Pro</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- SheetJS for Excel (.xlsx) Export (with automatic CSV fallback if offline) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* =========================================================
+       THEME SYSTEM (6 THEMES VIA CSS VARIABLES)
+       ========================================================= */
+    :root,
+    [data-theme="light"] {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-elevated: #f8fafc;
+      --bg-input: #f1f5f9;
+      --bg-nav: rgba(255, 255, 255, 0.92);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --accent-text: #ffffff;
+      --bevel-highlight: rgba(255, 255, 255, 0.85);
+      --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+      --meta-color: #f1f5f9;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #111317;
+      --bg-card: #1b1f26;
+      --bg-elevated: #232832;
+      --bg-input: #14171d;
+      --bg-nav: rgba(27, 31, 38, 0.94);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --border-color: #2d3442;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --accent-soft: rgba(245, 158, 11, 0.16);
+      --accent-text: #0f172a;
+      --bevel-highlight: rgba(255, 255, 255, 0.06);
+      --shadow-card: 0 6px 18px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.25);
+      --meta-color: #111317;
+    }
+
+    [data-theme="midnight"] {
+      --bg-main: #091124;
+      --bg-card: #101c38;
+      --bg-elevated: #16264a;
+      --bg-input: #0b152c;
+      --bg-nav: rgba(16, 28, 56, 0.94);
+      --text-primary: #f0f9ff;
+      --text-secondary: #bae6fd;
+      --text-muted: #64748b;
+      --border-color: #1e335c;
+      --accent: #06b6d4;
+      --accent-hover: #0891b2;
+      --accent-soft: rgba(6, 182, 212, 0.16);
+      --accent-text: #042f2e;
+      --bevel-highlight: rgba(186, 230, 253, 0.08);
+      --shadow-card: 0 6px 20px rgba(2, 6, 23, 0.45);
+      --meta-color: #091124;
+    }
+
+    [data-theme="emerald"] {
+      --bg-main: #0b1714;
+      --bg-card: #12241f;
+      --bg-elevated: #183029;
+      --bg-input: #0d1c18;
+      --bg-nav: rgba(18, 36, 31, 0.94);
+      --text-primary: #ecfdf5;
+      --text-secondary: #a7f3d0;
+      --text-muted: #6ee7b7;
+      --border-color: #1e3f35;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --accent-soft: rgba(16, 185, 129, 0.18);
+      --accent-text: #022c22;
+      --bevel-highlight: rgba(167, 243, 208, 0.07);
+      --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.4);
+      --meta-color: #0b1714;
+    }
+
+    [data-theme="sunset"] {
+      --bg-main: #fdf6ee;
+      --bg-card: #fffaf5;
+      --bg-elevated: #f7ece1;
+      --bg-input: #f3e6d8;
+      --bg-nav: rgba(255, 250, 245, 0.94);
+      --text-primary: #2d1a10;
+      --text-secondary: #6b422d;
+      --text-muted: #9e735b;
+      --border-color: #ebd7c5;
+      --accent: #ea580c;
+      --accent-hover: #c2410c;
+      --accent-soft: rgba(234, 88, 12, 0.13);
+      --accent-text: #ffffff;
+      --bevel-highlight: rgba(255, 255, 255, 0.9);
+      --shadow-card: 0 4px 14px rgba(124, 45, 18, 0.08);
+      --meta-color: #fdf6ee;
+    }
+
+    [data-theme="cyber"] {
+      --bg-main: #0d0718;
+      --bg-card: #170e29;
+      --bg-elevated: #22153d;
+      --bg-input: #110920;
+      --bg-nav: rgba(23, 14, 41, 0.94);
+      --text-primary: #faf5ff;
+      --text-secondary: #d8b4fe;
+      --text-muted: #8b5cf6;
+      --border-color: #321d59;
+      --accent: #ec4899;
+      --accent-hover: #db2777;
+      --accent-soft: rgba(236, 72, 153, 0.18);
+      --accent-text: #ffffff;
+      --bevel-highlight: rgba(236, 72, 153, 0.14);
+      --shadow-card: 0 6px 22px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.12);
+      --meta-color: #0d0718;
+    }
+
+    /* =========================================================
+       BASE & MEDIUM-BEVEL CARD STYLES
+       ========================================================= */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
+    }
+
+    .bevel-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 15px;
+      box-shadow: inset 0 1px 0 var(--bevel-highlight), var(--shadow-card);
+      transition: transform 0.18s ease, box-shadow 0.2s ease, background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .bevel-subcard {
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: inset 0 1px 0 var(--bevel-highlight);
+    }
+
+    .theme-input {
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .theme-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .btn-accent {
+      background-color: var(--accent);
+      color: var(--accent-text);
+      border-radius: 12px;
+      font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 3px 10px var(--accent-soft);
+      transition: transform 0.12s ease, opacity 0.15s ease;
+    }
+
+    .btn-accent:active {
+      transform: scale(0.97);
+    }
+
+    .btn-soft {
+      background-color: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .btn-soft:active {
+      transform: scale(0.97);
+    }
+
+    .btn-ghost {
+      background-color: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .glass-bar {
+      background-color: var(--bg-nav);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-color: var(--border-color);
+    }
+
+    /* Status Badges */
+    .badge-low {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .badge-mid {
+      background-color: rgba(245, 158, 11, 0.16);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    [data-theme="dark"] .badge-mid,
+    [data-theme="midnight"] .badge-mid,
+    [data-theme="emerald"] .badge-mid,
+    [data-theme="cyber"] .badge-mid {
+      color: #fbbf24;
+    }
+    .badge-ok {
+      background-color: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    [data-theme="dark"] .badge-ok,
+    [data-theme="midnight"] .badge-ok,
+    [data-theme="emerald"] .badge-ok,
+    [data-theme="cyber"] .badge-ok {
+      color: #34d399;
+    }
+
+    /* Hide scrollbar cleanly */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Animations */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeSlideUp 0.22s ease-out forwards;
+    }
+
+    /* Safe area bottom padding for mobile */
+    .pb-safe {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    .nav-safe {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- =========================================================
+       TOP HEADER
+       ========================================================= -->
+  <header class="glass-bar sticky top-0 z-30 border-b px-4 py-3">
+    <div class="max-w-3xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: var(--accent); color: var(--accent-text); box-shadow: 0 3px 10px var(--accent-soft);">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </div>
+        <div class="truncate">
+          <h1 class="text-base font-extrabold tracking-tight leading-tight truncate">StockFlow Pro</h1>
+          <p class="text-[11px] font-medium truncate" style="color: var(--text-muted);" data-i18n="appSubtitle">Production Stock Control</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Quick Theme Cycle Button -->
+        <button id="btnQuickTheme" onclick="cycleTheme()" class="btn-ghost p-2 flex items-center justify-center" title="Switch Theme" aria-label="Switch Theme">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+          </svg>
+        </button>
+
+        <!-- Instant Language Toggle (EN / BM) -->
+        <button id="btnLangToggle" onclick="toggleLanguage()" class="btn-soft px-3 py-1.5 text-xs font-bold tracking-wide">
+          EN / BM
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       MAIN CONTENT AREA
+       ========================================================= -->
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 pt-4 pb-safe">
+
+    <!-- TAB 1: DASHBOARD -->
+    <section id="tab-dashboard" class="space-y-4 animate-in">
+      <!-- KPI Grid -->
+      <div class="grid grid-cols-3 gap-2.5">
+        <div class="bevel-card p-3.5 flex flex-col justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--text-muted);" data-i18n="kpiTotalParts">Total Parts</span>
+          <div class="mt-1.5 flex items-baseline justify-between">
+            <span id="kpiTotal" class="text-2xl font-extrabold">0</span>
+            <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style="background: var(--accent-soft); color: var(--accent);">SKU</span>
+          </div>
+        </div>
+        <div class="bevel-card p-3.5 flex flex-col justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--text-muted);" data-i18n="kpiLowStock">Low Stock</span>
+          <div class="mt-1.5 flex items-baseline justify-between">
+            <span id="kpiLow" class="text-2xl font-extrabold text-red-500">0</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md badge-low">LOW</span>
+          </div>
+        </div>
+        <div class="bevel-card p-3.5 flex flex-col justify-between">
+          <span class="text-[11px] font-semibold uppercase tracking-wider" style="color: var(--text-muted);" data-i18n="kpiTodayLogs">Today Log</span>
+          <div class="mt-1.5 flex items-baseline justify-between">
+            <span id="kpiToday" class="text-2xl font-extrabold" style="color: var(--accent);">0</span>
+            <span class="text-[10px] font-semibold" style="color: var(--text-muted);" data-i18n="kpiTxns">txns</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Bar -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="openTxModal('IN')" class="bevel-card p-3 flex items-center gap-2.5 text-left active:scale-[0.98]">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-emerald-500/15 text-emerald-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs font-bold truncate" data-i18n="quickStockIn">Record Stock IN</div>
+            <div class="text-[10px] truncate" style="color: var(--text-muted);" data-i18n="quickStockInSub">Child / Loose / Assy</div>
+          </div>
+        </button>
+
+        <button onclick="openAssyModal()" class="bevel-card p-3 flex items-center gap-2.5 text-left active:scale-[0.98]">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: var(--accent-soft); color: var(--accent);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div class="min-w-0">
+            <div class="text-xs font-bold truncate" data-i18n="quickProduceAssy">Produce Assy</div>
+            <div class="text-[10px] truncate" style="color: var(--text-muted);" data-i18n="quickProduceAssySub">Auto-deduct BOM</div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Estimated Assy Readiness Section -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-sm font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full" style="background: var(--accent);"></span>
+            <span data-i18n="dashEstAssyTitle">Estimated Assy Capacity</span>
+          </h2>
+          <span class="text-[11px] font-medium" style="color: var(--text-muted);" data-i18n="dashAutoCalc">Auto-calculated</span>
+        </div>
+        <div id="dashAssyContainer" class="space-y-2.5"></div>
+      </div>
+
+      <!-- Low Stock Alerts Section -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-sm font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-red-500"></span>
+            <span data-i18n="dashLowAlerts">Stock Alerts (Low & Mid)</span>
+          </h2>
+        </div>
+        <div id="dashAlertsContainer" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: STOCK INVENTORY -->
+    <section id="tab-stock" class="hidden space-y-3.5 animate-in">
+      <!-- Search + Add Button -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style="color: var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="stockSearch" type="text" oninput="renderStock()" class="theme-input w-full pl-10 pr-3 py-2.5 text-sm" data-i18n-placeholder="searchPartsPlaceholder" placeholder="Search part, code, vendor..." />
+        </div>
+        <button onclick="openPartModal()" class="btn-accent px-4 py-2.5 text-sm flex items-center gap-1.5 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <span data-i18n="btnAddPart">Add Part</span>
+        </button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1" id="categoryPills">
+        <button onclick="setStockFilter('all')" data-cat="all" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition" data-i18n="catAll">All</button>
+        <button onclick="setStockFilter('child')" data-cat="child" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition" data-i18n="catChild">Child (Vendor)</button>
+        <button onclick="setStockFilter('loose')" data-cat="loose" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition" data-i18n="catLoose">Loose (In-House)</button>
+        <button onclick="setStockFilter('assy')" data-cat="assy" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition" data-i18n="catAssy">Assy (In-House)</button>
+      </div>
+
+      <!-- Stock Cards List -->
+      <div id="stockListContainer" class="space-y-3"></div>
+    </section>
+
+    <!-- TAB 3: HISTORY / LOG -->
+    <section id="tab-history" class="hidden space-y-3.5 animate-in">
+      <!-- Search & Type Filter -->
+      <div class="space-y-2.5">
+        <div class="relative">
+          <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style="color: var(--text-muted);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="historySearch" type="text" oninput="renderHistory()" class="theme-input w-full pl-10 pr-3 py-2.5 text-sm" data-i18n-placeholder="searchHistoryPlaceholder" placeholder="Search item name or remark..." />
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar" id="historyFilterPills">
+          <button onclick="setHistoryFilter('ALL')" data-hcat="ALL" class="hist-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0" data-i18n="catAll">All</button>
+          <button onclick="setHistoryFilter('IN')" data-hcat="IN" class="hist-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0">IN</button>
+          <button onclick="setHistoryFilter('ASSY')" data-hcat="ASSY" class="hist-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0">ASSY</button>
+          <button onclick="setHistoryFilter('OUT')" data-hcat="OUT" class="hist-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0">OUT</button>
+          <button onclick="setHistoryFilter('NG')" data-hcat="NG" class="hist-pill px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0">NG</button>
+        </div>
+      </div>
+
+      <!-- History Feed -->
+      <div id="historyListContainer" class="space-y-2.5"></div>
+    </section>
+
+    <!-- TAB 4: SETTINGS -->
+    <section id="tab-settings" class="hidden space-y-4 animate-in">
+      <!-- Language Setting -->
+      <div class="bevel-card p-4 space-y-3">
+        <h3 class="text-sm font-bold" data-i18n="setLanguage">Language / Bahasa</h3>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="setLanguage('en')" id="langBtnEn" class="p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition">
+            <span>🇬🇧</span> English
+          </button>
+          <button onclick="setLanguage('bm')" id="langBtnBm" class="p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition">
+            <span>🇲🇾</span> Bahasa Melayu
+          </button>
+        </div>
+      </div>
+
+      <!-- 6-Theme Visual Grid Selector -->
+      <div class="bevel-card p-4 space-y-3">
+        <h3 class="text-sm font-bold" data-i18n="setThemes">Appearance Themes (6)</h3>
+        <div id="themeGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- Export & Data Management -->
+      <div class="bevel-card p-4 space-y-3">
+        <h3 class="text-sm font-bold" data-i18n="setExportBackup">Export & Backup</h3>
+
+        <!-- Export to Excel -->
+        <button onclick="exportToExcel()" class="w-full p-3.5 rounded-xl font-bold text-sm flex items-center justify-between text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition shadow-sm">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span data-i18n="btnExportExcel">Export to Excel (.xlsx)</span>
+          </span>
+          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-md">2 Sheets</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Backup JSON -->
+          <button onclick="exportBackupJSON()" class="btn-ghost p-3 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span data-i18n="btnBackupJson">Backup JSON</span>
+          </button>
+
+          <!-- Restore JSON -->
+          <label class="btn-ghost p-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span data-i18n="btnRestoreJson">Restore JSON</span>
+            <input type="file" accept=".json" onchange="importBackupJSON(event)" class="hidden" />
+          </label>
+        </div>
+      </div>
+
+      <!-- Danger Zone / Sample Data -->
+      <div class="bevel-card p-4 space-y-3">
+        <h3 class="text-sm font-bold" data-i18n="setDataReset">Data Utilities</h3>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="confirmLoadSample()" class="btn-soft p-3 text-xs font-bold flex items-center justify-center gap-1.5">
+            <span data-i18n="btnLoadSample">Load Sample Data</span>
+          </button>
+          <button onclick="confirmClearAll()" class="p-3 rounded-xl text-xs font-bold bg-red-500/15 text-red-500 border border-red-500/30 flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span data-i18n="btnClearAll">Clear All Data</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="text-center text-[11px] pt-2" style="color: var(--text-muted);">
+        StockFlow Pro v1.0 • Offline-Ready PWA
+      </p>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       BOTTOM NAVIGATION BAR (4 TABS)
+       ========================================================= -->
+  <nav class="glass-bar fixed bottom-0 left-0 right-0 z-30 border-t nav-safe">
+    <div class="max-w-3xl mx-auto grid grid-cols-4 h-16">
+      <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span data-i18n="navDashboard">Dashboard</span>
+      </button>
+
+      <button onclick="switchTab('stock')" data-tab="stock" class="nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <span data-i18n="navStock">Stock</span>
+      </button>
+
+      <button onclick="switchTab('history')" data-tab="history" class="nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span data-i18n="navHistory">History</span>
+      </button>
+
+      <button onclick="switchTab('settings')" data-tab="settings" class="nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span data-i18n="navSettings">Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- =========================================================
+       MODAL 1: ADD / EDIT PART (CHILD / LOOSE / ASSY + BOM)
+       ========================================================= -->
+  <div id="partModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
+    <div class="bevel-card w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-b-none sm:rounded-2xl overflow-hidden animate-in">
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: var(--border-color);">
+        <h3 id="partModalTitle" class="text-base font-extrabold">Add New Part</h3>
+        <button onclick="closeModal('partModal')" class="p-1.5 rounded-lg" style="color: var(--text-muted);">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-4">
+        <input type="hidden" id="partId" />
+
+        <!-- Category Selector -->
+        <div>
+          <label class="block text-xs font-bold mb-1.5" style="color: var(--text-secondary);" data-i18n="lblCategory">Category</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectPartCategory('child')" data-pcat="child" class="pcat-btn py-2.5 px-2 rounded-xl text-xs font-bold border text-center transition" data-i18n="catChildShort">Child (Vendor)</button>
+            <button type="button" onclick="selectPartCategory('loose')" data-pcat="loose" class="pcat-btn py-2.5 px-2 rounded-xl text-xs font-bold border text-center transition" data-i18n="catLooseShort">Loose (In-House)</button>
+            <button type="button" onclick="selectPartCategory('assy')" data-pcat="assy" class="pcat-btn py-2.5 px-2 rounded-xl text-xs font-bold border text-center transition" data-i18n="catAssyShort">Assy (In-House)</button>
+          </div>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="flex items-center gap-3.5">
+          <div id="partPhotoPreview" class="w-20 h-20 rounded-2xl border flex items-center justify-center overflow-hidden shrink-0" style="background: var(--bg-input); border-color: var(--border-color);">
+            <svg class="w-7 h-7" style="color: var(--text-muted);" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div class="flex-1 space-y-2">
+            <label class="block text-xs font-bold" style="color: var(--text-secondary);" data-i18n="lblPhoto">Part Photo (Optional)</label>
+            <div class="flex items-center gap-2">
+              <label class="btn-soft px-3 py-2 text-xs cursor-pointer inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span data-i18n="btnUploadPhoto">Upload / Camera</span>
+                <input type="file" id="partPhotoInput" accept="image/*" onchange="handlePhotoUpload(event)" class="hidden" />
+              </label>
+              <button type="button" id="btnRemovePhoto" onclick="removePartPhoto()" class="hidden px-2.5 py-2 rounded-xl text-xs font-semibold text-red-500 bg-red-500/10" data-i18n="btnRemove">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Name & Part No -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblPartName">Part Name *</label>
+            <input type="text" id="partName" class="theme-input w-full px-3.5 py-2.5 text-sm" placeholder="e.g. Bolt M6" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblPartNo">Part No (Optional)</label>
+            <input type="text" id="partNo" class="theme-input w-full px-3.5 py-2.5 text-sm" placeholder="e.g. CP-001" />
+          </div>
+        </div>
+
+        <!-- Vendor Field (Only for Child Part) -->
+        <div id="vendorFieldWrapper">
+          <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblVendor">Vendor Name *</label>
+          <input type="text" id="partVendor" class="theme-input w-full px-3.5 py-2.5 text-sm" placeholder="e.g. Apex Fasteners Sdn Bhd" />
+        </div>
+
+        <!-- Qty & Stock Status Thresholds -->
+        <div class="grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblCurrentQty">Current Qty</label>
+            <input type="number" id="partQty" min="0" value="0" class="theme-input w-full px-3 py-2.5 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-red-500" data-i18n="lblLowLimit">LOW Limit ≤</label>
+            <input type="number" id="partLow" min="0" value="20" class="theme-input w-full px-3 py-2.5 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-amber-500" data-i18n="lblMidLimit">MID Limit ≤</label>
+            <input type="number" id="partMid" min="0" value="50" class="theme-input w-full px-3 py-2.5 text-sm font-bold" />
+          </div>
+        </div>
+        <p class="text-[11px]" style="color: var(--text-muted);" data-i18n="hintThresholds">
+          Indicator: LOW (≤ Low Limit), MID (between Low & Mid), OK (&gt; Mid Limit).
+        </p>
+
+        <!-- BOM / Recipe Builder (Only for Assy Part) -->
+        <div id="bomBuilderWrapper" class="hidden bevel-subcard p-3.5 space-y-3">
+          <div>
+            <h4 class="text-xs font-extrabold uppercase tracking-wider" style="color: var(--accent);" data-i18n="bomTitle">Assy Recipe (BOM)</h4>
+            <p class="text-[11px]" style="color: var(--text-muted);" data-i18n="bomSubtitle">Select Child & Loose parts required to build 1 unit of Assy.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select id="bomPartSelect" class="theme-input flex-1 px-3 py-2 text-xs font-medium"></select>
+            <input type="number" id="bomReqQty" min="1" value="1" class="theme-input w-16 px-2.5 py-2 text-xs font-bold text-center" placeholder="Qty" />
+            <button type="button" onclick="addBomRow()" class="btn-accent px-3 py-2 text-xs shrink-0">+ Add</button>
+          </div>
+
+          <div id="bomListContainer" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3.5 border-t flex items-center justify-end gap-2" style="border-color: var(--border-color);">
+        <button onclick="closeModal('partModal')" class="btn-ghost px-4 py-2.5 text-xs font-bold" data-i18n="btnCancel">Cancel</button>
+        <button onclick="savePart()" class="btn-accent px-5 py-2.5 text-xs font-bold" data-i18n="btnSavePart">Save Part</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 2: TRANSACTION MODAL (IN / OUT / NG)
+       ========================================================= -->
+  <div id="txModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
+    <div class="bevel-card w-full sm:max-w-md max-h-[90vh] flex flex-col rounded-b-none sm:rounded-2xl overflow-hidden animate-in">
+      <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: var(--border-color);">
+        <h3 id="txModalTitle" class="text-base font-extrabold">Record Transaction</h3>
+        <button onclick="closeModal('txModal')" class="p-1.5 rounded-lg" style="color: var(--text-muted);">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4">
+        <!-- Type Switcher (IN / OUT / NG) -->
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="setTxType('IN')" data-txtype="IN" class="txtype-btn py-2.5 rounded-xl text-xs font-extrabold border transition">+ IN</button>
+          <button type="button" onclick="setTxType('OUT')" data-txtype="OUT" class="txtype-btn py-2.5 rounded-xl text-xs font-extrabold border transition">- OUT</button>
+          <button type="button" onclick="setTxType('NG')" data-txtype="NG" class="txtype-btn py-2.5 rounded-xl text-xs font-extrabold border transition">! NG</button>
+        </div>
+
+        <!-- Part Selection -->
+        <div>
+          <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblSelectPart">Select Part</label>
+          <select id="txPartSelect" onchange="updateTxStockPreview()" class="theme-input w-full px-3.5 py-2.5 text-sm font-semibold"></select>
+          <div id="txCurrentStockInfo" class="mt-1.5 text-xs font-medium" style="color: var(--text-muted);"></div>
+        </div>
+
+        <!-- Quantity & Date/Time -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblQty">Quantity *</label>
+            <input type="number" id="txQty" min="1" value="1" class="theme-input w-full px-3.5 py-2.5 text-base font-extrabold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblDateTime">Date & Time</label>
+            <input type="datetime-local" id="txDateTime" class="theme-input w-full px-3 py-2.5 text-xs font-semibold" />
+          </div>
+        </div>
+
+        <!-- Remark / NG Reason -->
+        <div>
+          <label id="txRemarkLabel" class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblRemark">Remark (Optional)</label>
+          <input type="text" id="txRemark" class="theme-input w-full px-3.5 py-2.5 text-sm" placeholder="e.g. DO #4421 / Scratch / Dent" />
+        </div>
+      </div>
+
+      <div class="px-5 py-3.5 border-t flex items-center justify-end gap-2" style="border-color: var(--border-color);">
+        <button onclick="closeModal('txModal')" class="btn-ghost px-4 py-2.5 text-xs font-bold" data-i18n="btnCancel">Cancel</button>
+        <button onclick="submitTransaction()" class="btn-accent px-5 py-2.5 text-xs font-bold" data-i18n="btnConfirmRecord">Confirm Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 3: PRODUCE ASSY MODAL (AUTO-DEDUCT BOM)
+       ========================================================= -->
+  <div id="assyModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4">
+    <div class="bevel-card w-full sm:max-w-lg max-h-[92vh] flex flex-col rounded-b-none sm:rounded-2xl overflow-hidden animate-in">
+      <div class="px-5 py-4 border-b flex items-center justify-between" style="border-color: var(--border-color);">
+        <h3 class="text-base font-extrabold" data-i18n="modalProduceAssyTitle">Produce Assy (Auto-Deduct)</h3>
+        <button onclick="closeModal('assyModal')" class="p-1.5 rounded-lg" style="color: var(--text-muted);">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblSelectAssy">Select Assy Part</label>
+          <select id="assyPartSelect" onchange="renderAssyDeductionPreview()" class="theme-input w-full px-3.5 py-2.5 text-sm font-semibold"></select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblAssyQtyProduced">Qty Produced *</label>
+            <input type="number" id="assyProduceQty" min="1" value="1" oninput="renderAssyDeductionPreview()" class="theme-input w-full px-3.5 py-2.5 text-base font-extrabold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblDateTime">Date & Time</label>
+            <input type="datetime-local" id="assyDateTime" class="theme-input w-full px-3 py-2.5 text-xs font-semibold" />
+          </div>
+        </div>
+
+        <!-- BOM Auto-Deduction Preview -->
+        <div class="bevel-subcard p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider" style="color: var(--text-secondary);" data-i18n="bomDeductionPreview">BOM Auto-Deduction Preview</span>
+            <span id="assyMaxEstBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full" style="background: var(--accent-soft); color: var(--accent);"></span>
+          </div>
+          <div id="assyPreviewList" class="space-y-1.5"></div>
+          <div id="assyShortageWarning" class="hidden p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-500 text-xs font-semibold"></div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold mb-1" style="color: var(--text-secondary);" data-i18n="lblRemark">Remark (Optional)</label>
+          <input type="text" id="assyRemark" class="theme-input w-full px-3.5 py-2.5 text-sm" placeholder="e.g. Shift A / Line 2" />
+        </div>
+      </div>
+
+      <div class="px-5 py-3.5 border-t flex items-center justify-end gap-2" style="border-color: var(--border-color);">
+        <button onclick="closeModal('assyModal')" class="btn-ghost px-4 py-2.5 text-xs font-bold" data-i18n="btnCancel">Cancel</button>
+        <button id="btnConfirmAssy" onclick="submitProduceAssy()" class="btn-accent px-5 py-2.5 text-xs font-bold" data-i18n="btnConfirmProduce">Confirm & Deduct Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 4: PHOTO LIGHTBOX (ZOOM)
+       ========================================================= -->
+  <div id="photoModal" onclick="closeModal('photoModal')" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+    <div class="max-w-md w-full text-center space-y-3" onclick="event.stopPropagation()">
+      <img id="photoModalImg" src="" alt="Part Photo" class="w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/15 bg-black/40" />
+      <div class="flex items-center justify-between px-2">
+        <span id="photoModalCaption" class="text-sm font-bold text-white truncate"></span>
+        <button onclick="closeModal('photoModal')" class="px-4 py-1.5 rounded-xl bg-white/15 text-white text-xs font-bold">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL 5: CUSTOM CONFIRM DIALOG (NO NATIVE confirm/alert)
+       ========================================================= -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="bevel-card w-full max-w-sm p-5 space-y-4 animate-in">
+      <div class="space-y-1.5">
+        <h3 id="confirmTitle" class="text-base font-extrabold">Confirm</h3>
+        <p id="confirmMessage" class="text-xs leading-relaxed" style="color: var(--text-secondary);"></p>
+      </div>
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="closeModal('confirmModal')" class="btn-ghost px-4 py-2 text-xs font-bold" data-i18n="btnCancel">Cancel</button>
+        <button id="confirmOkBtn" class="px-4 py-2 rounded-xl text-xs font-bold bg-red-500 text-white shadow-sm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       TOAST NOTIFICATION
+       ========================================================= -->
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 hidden px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold text-white transition-all max-w-[90vw] text-center"></div>
+
+  <!-- =========================================================
+       APPLICATION LOGIC (JAVASCRIPT)
+       ========================================================= -->
+  <script>
+    /* ---------------------------------------------------------
+       1. TRANSLATIONS (EN & BM)
+       --------------------------------------------------------- */
+    const I18N = {
+      en: {
+        appSubtitle: "Production Stock Control",
+        navDashboard: "Dashboard",
+        navStock: "Stock",
+        navHistory: "History",
+        navSettings: "Settings",
+        kpiTotalParts: "Total Parts",
+        kpiLowStock: "Low Stock",
+        kpiTodayLogs: "Today Log",
+        kpiTxns: "txns",
+        quickStockIn: "Record Stock IN",
+        quickStockInSub: "Child / Loose / Assy",
+        quickProduceAssy: "Produce Assy",
+        quickProduceAssySub: "Auto-deduct BOM",
+        dashEstAssyTitle: "Estimated Assy Capacity",
+        dashAutoCalc: "Auto-calculated",
+        dashLowAlerts: "Stock Alerts (Low & Mid)",
+        estCanAssy: "Est. Can Assy",
+        limitedBy: "Limited by",
+        noBomSet: "No BOM recipe set",
+        allStockHealthy: "All stock levels are healthy (OK)!",
+        noAssyYet: "No Assy parts added yet.",
+        searchPartsPlaceholder: "Search part, code, vendor...",
+        searchHistoryPlaceholder: "Search item name or remark...",
+        btnAddPart: "Add Part",
+        catAll: "All",
+        catChild: "Child (Vendor)",
+        catLoose: "Loose (In-House)",
+        catAssy: "Assy (In-House)",
+        catChildShort: "Child (Vendor)",
+        catLooseShort: "Loose (In-House)",
+        catAssyShort: "Assy (In-House)",
+        vendorLabel: "Vendor",
+        inHouseLabel: "In-House",
+        btnEdit: "Edit",
+        btnDelete: "Delete",
+        btnProduce: "Assy",
+        noPartsFound: "No matching parts found.",
+        noHistoryFound: "No transaction logs yet.",
+        setLanguage: "Language / Bahasa",
+        setThemes: "Appearance Themes (6)",
+        setExportBackup: "Export & Backup",
+        btnExportExcel: "Export to Excel (.xlsx)",
+        btnBackupJson: "Backup JSON",
+        btnRestoreJson: "Restore JSON",
+        setDataReset: "Data Utilities",
+        btnLoadSample: "Load Sample Data",
+        btnClearAll: "Clear All Data",
+        lblCategory: "Category",
+        lblPhoto: "Part Photo (Optional)",
+        btnUploadPhoto: "Upload / Camera",
+        btnRemove: "Remove",
+        lblPartName: "Part Name *",
+        lblPartNo: "Part No (Optional)",
+        lblVendor: "Vendor Name *",
+        lblCurrentQty: "Current Qty",
+        lblLowLimit: "LOW Limit ≤",
+        lblMidLimit: "MID Limit ≤",
+        hintThresholds: "Indicator: LOW (≤ Low Limit), MID (between Low & Mid), OK (> Mid Limit).",
+        bomTitle: "Assy Recipe (BOM)",
+        bomSubtitle: "Select Child & Loose parts required to build 1 unit of Assy.",
+        btnCancel: "Cancel",
+        btnSavePart: "Save Part",
+        modalAddPart: "Add New Part",
+        modalEditPart: "Edit Part",
+        lblSelectPart: "Select Part",
+        lblQty: "Quantity *",
+        lblDateTime: "Date & Time",
+        lblRemark: "Remark (Optional)",
+        lblNgReason: "NG Reason / Remark *",
+        btnConfirmRecord: "Confirm Record",
+        modalProduceAssyTitle: "Produce Assy (Auto-Deduct)",
+        lblSelectAssy: "Select Assy Part",
+        lblAssyQtyProduced: "Qty Produced *",
+        bomDeductionPreview: "BOM Auto-Deduction Preview",
+        btnConfirmProduce: "Confirm & Deduct Stock",
+        currentStockTxt: "Current Stock",
+        neededTxt: "Need",
+        haveTxt: "Stock",
+        shortageWarningTxt: "Insufficient component stock for this quantity!",
+        toastSaved: "Part saved successfully!",
+        toastDeleted: "Part deleted.",
+        toastTxSuccess: "Transaction recorded!",
+        toastAssySuccess: "Assy produced & BOM deducted!",
+        toastExcelDone: "Excel file exported!",
+        toastCsvFallback: "Offline mode: Exported as CSV files.",
+        toastBackupDone: "JSON backup downloaded!",
+        toastRestoreDone: "Data restored successfully!",
+        toastInvalidFile: "Invalid backup file.",
+        toastSampleLoaded: "Sample data loaded!",
+        toastCleared: "All data cleared.",
+        errNameRequired: "Please enter Part Name.",
+        errVendorRequired: "Please enter Vendor Name for Child Part.",
+        errInvalidQty: "Please enter a valid quantity (> 0).",
+        errNoParts: "Please add at least one part first.",
+        errNoAssyParts: "Please add an Assy Part with a BOM first.",
+        errInsufficientStock: "Insufficient stock for OUT/NG.",
+        confirmDeleteTitle: "Delete Part?",
+        confirmDeleteMsg: "This will permanently remove this part from inventory.",
+        confirmSampleTitle: "Load Sample Data?",
+        confirmSampleMsg: "This will replace your current data with sample Child, Loose, and Assy parts.",
+        confirmClearTitle: "Clear All Data?",
+        confirmClearMsg: "All parts and transaction history will be permanently deleted."
+      },
+      bm: {
+        appSubtitle: "Kawalan Stok Produksi",
+        navDashboard: "Utama",
+        navStock: "Stok",
+        navHistory: "Rekod",
+        navSettings: "Tetapan",
+        kpiTotalParts: "Jumlah Part",
+        kpiLowStock: "Stok Rendah",
+        kpiTodayLogs: "Rekod Hari Ini",
+        kpiTxns: "rekod",
+        quickStockIn: "Rekod Stok MASUK",
+        quickStockInSub: "Child / Loose / Assy",
+        quickProduceAssy: "Buat Assy",
+        quickProduceAssySub: "Auto-tolak BOM",
+        dashEstAssyTitle: "Anggaran Boleh Assy",
+        dashAutoCalc: "Kiraan automatik",
+        dashLowAlerts: "Amaran Stok (Low & Mid)",
+        estCanAssy: "Anggaran Assy",
+        limitedBy: "Terhad oleh",
+        noBomSet: "Tiada resepi BOM ditetapkan",
+        allStockHealthy: "Semua tahap stok dalam keadaan selamat (OK)!",
+        noAssyYet: "Tiada Assy Part ditambah lagi.",
+        searchPartsPlaceholder: "Cari nama part, kod, vendor...",
+        searchHistoryPlaceholder: "Cari nama part atau catatan...",
+        btnAddPart: "Tambah Part",
+        catAll: "Semua",
+        catChild: "Child (Vendor)",
+        catLoose: "Loose (In-House)",
+        catAssy: "Assy (In-House)",
+        catChildShort: "Child (Vendor)",
+        catLooseShort: "Loose (In-House)",
+        catAssyShort: "Assy (In-House)",
+        vendorLabel: "Vendor",
+        inHouseLabel: "In-House",
+        btnEdit: "Edit",
+        btnDelete: "Padam",
+        btnProduce: "Assy",
+        noPartsFound: "Tiada part dijumpai.",
+        noHistoryFound: "Tiada rekod transaksi lagi.",
+        setLanguage: "Bahasa / Language",
+        setThemes: "Tema Paparan (6)",
+        setExportBackup: "Eksport & Sandaran",
+        btnExportExcel: "Eksport ke Excel (.xlsx)",
+        btnBackupJson: "Sandaran JSON",
+        btnRestoreJson: "Pulih JSON",
+        setDataReset: "Utiliti Data",
+        btnLoadSample: "Muat Data Contoh",
+        btnClearAll: "Padam Semua Data",
+        lblCategory: "Kategori",
+        lblPhoto: "Gambar Part (Pilihan)",
+        btnUploadPhoto: "Muat Naik / Kamera",
+        btnRemove: "Buang",
+        lblPartName: "Nama Part *",
+        lblPartNo: "No. Part (Pilihan)",
+        lblVendor: "Nama Vendor *",
+        lblCurrentQty: "Stok Semasa",
+        lblLowLimit: "Had LOW ≤",
+        lblMidLimit: "Had MID ≤",
+        hintThresholds: "Indikator: LOW (≤ Had Low), MID (antara Low & Mid), OK (> Had Mid).",
+        bomTitle: "Resepi Assy (BOM)",
+        bomSubtitle: "Pilih Child & Loose part yang diperlukan untuk 1 unit Assy.",
+        btnCancel: "Batal",
+        btnSavePart: "Simpan Part",
+        modalAddPart: "Tambah Part Baru",
+        modalEditPart: "Edit Part",
+        lblSelectPart: "Pilih Part",
+        lblQty: "Kuantiti *",
+        lblDateTime: "Tarikh & Masa",
+        lblRemark: "Catatan (Pilihan)",
+        lblNgReason: "Sebab NG / Catatan *",
+        btnConfirmRecord: "Sahkan Rekod",
+        modalProduceAssyTitle: "Hasilkan Assy (Auto-Tolak)",
+        lblSelectAssy: "Pilih Assy Part",
+        lblAssyQtyProduced: "Kuantiti Siap *",
+        bomDeductionPreview: "Pratonton Auto-Tolak BOM",
+        btnConfirmProduce: "Sahkan & Tolak Stok",
+        currentStockTxt: "Stok Semasa",
+        neededTxt: "Perlu",
+        haveTxt: "Ada",
+        shortageWarningTxt: "Stok komponen tidak mencukupi untuk kuantiti ini!",
+        toastSaved: "Part berjaya disimpan!",
+        toastDeleted: "Part telah dipadam.",
+        toastTxSuccess: "Transaksi berjaya direkod!",
+        toastAssySuccess: "Assy direkod & stok BOM ditolak!",
+        toastExcelDone: "Fail Excel (.xlsx) berjaya dimuat turun!",
+        toastCsvFallback: "Mod offline: Dieksport sebagai fail CSV.",
+        toastBackupDone: "Fail sandaran JSON dimuat turun!",
+        toastRestoreDone: "Data berjaya dipulihkan!",
+        toastInvalidFile: "Fail sandaran tidak sah.",
+        toastSampleLoaded: "Data contoh berjaya dimuatkan!",
+        toastCleared: "Semua data telah dipadam.",
+        errNameRequired: "Sila masukkan Nama Part.",
+        errVendorRequired: "Sila masukkan Nama Vendor untuk Child Part.",
+        errInvalidQty: "Sila masukkan kuantiti yang sah (> 0).",
+        errNoParts: "Sila tambah sekurang-kurangnya satu part dahulu.",
+        errNoAssyParts: "Sila tambah Assy Part berserta BOM dahulu.",
+        errInsufficientStock: "Stok semasa tidak mencukupi untuk OUT/NG.",
+        confirmDeleteTitle: "Padam Part?",
+        confirmDeleteMsg: "Part ini akan dipadam secara kekal daripada inventori.",
+        confirmSampleTitle: "Muat Data Contoh?",
+        confirmSampleMsg: "Data semasa akan diganti dengan contoh Child, Loose, dan Assy.",
+        confirmClearTitle: "Padam Semua Data?",
+        confirmClearMsg: "Semua senarai part dan sejarah transaksi akan dipadam kekal."
+      }
+    };
+
+    /* ---------------------------------------------------------
+       2. THEMES CONFIGURATION
+       --------------------------------------------------------- */
+    const THEMES = [
+      { id: "light", name: "Clean Light", bg: "#f1f5f9", card: "#ffffff", accent: "#2563eb", meta: "#f1f5f9" },
+      { id: "dark", name: "Industrial Dark", bg: "#111317", card: "#1b1f26", accent: "#f59e0b", meta: "#111317" },
+      { id: "midnight", name: "Midnight Blue", bg: "#091124", card: "#101c38", accent: "#06b6d4", meta: "#091124" },
+      { id: "emerald", name: "Emerald Pro", bg: "#0b1714", card: "#12241f", accent: "#10b981", meta: "#0b1714" },
+      { id: "sunset", name: "Sunset Warm", bg: "#fdf6ee", card: "#fffaf5", accent: "#ea580c", meta: "#fdf6ee" },
+      { id: "cyber", name: "Cyber Neon", bg: "#0d0718", card: "#170e29", accent: "#ec4899", meta: "#0d0718" }
+    ];
+
+    /* ---------------------------------------------------------
+       3. APP STATE & STORAGE KEYS
+       --------------------------------------------------------- */
+    const STORAGE_KEYS = {
+      PARTS: "sfp_parts_v1",
+      LOGS: "sfp_logs_v1",
+      THEME: "sfp_theme_v1",
+      LANG: "sfp_lang_v1",
+      INIT: "sfp_initialized_v1"
+    };
+
+    let state = {
+      parts: [],
+      logs: [],
+      theme: "light",
+      lang: "en",
+      activeTab: "dashboard",
+      stockFilter: "all",
+      historyFilter: "ALL",
+      // Temporary modal states
+      editCategory: "child",
+      editPhotoData: "",
+      editBom: [],
+      txType: "IN"
+    };
+
+    /* ---------------------------------------------------------
+       4. INITIALIZATION & SAMPLE DATA
+       --------------------------------------------------------- */
+    function initApp() {
+      state.theme = localStorage.getItem(STORAGE_KEYS.THEME) || "light";
+      state.lang = localStorage.getItem(STORAGE_KEYS.LANG) || "en";
+
+      const isInit = localStorage.getItem(STORAGE_KEYS.INIT);
+      if (!isInit) {
+        loadSampleData(false);
+        localStorage.setItem(STORAGE_KEYS.INIT, "true");
+      } else {
+        try {
+          state.parts = JSON.parse(localStorage.getItem(STORAGE_KEYS.PARTS) || "[]");
+          state.logs = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOGS) || "[]");
+        } catch (e) {
+          state.parts = [];
+          state.logs = [];
+        }
+      }
+
+      applyTheme(state.theme);
+      applyLanguage();
+      renderThemeGrid();
+      switchTab("dashboard");
+    }
+
+    function loadSampleData(notify = true) {
+      const now = Date.now();
+      state.parts = [
+        {
+          id: "cp_1",
+          category: "child",
+          name: "Hex Bolt M6x20",
+          partNo: "CP-BLT-M6",
+          vendor: "Apex Fasteners Sdn Bhd",
+          qty: 120,
+          lowLimit: 40,
+          midLimit: 100,
+          photo: "",
+          bom: []
+        },
+        {
+          id: "cp_2",
+          category: "child",
+          name: "Rubber Grommet 12mm",
+          partNo: "CP-GRM-12",
+          vendor: "Sinar Polymer Tech",
+          qty: 35,
+          lowLimit: 40,
+          midLimit: 80,
+          photo: "",
+          bom: []
+        },
+        {
+          id: "lp_1",
+          category: "loose",
+          name: "Stamped Bracket Base",
+          partNo: "LP-BRK-01",
+          vendor: "",
+          qty: 64,
+          lowLimit: 20,
+          midLimit: 50,
+          photo: "",
+          bom: []
+        },
+        {
+          id: "lp_2",
+          category: "loose",
+          name: "Top Cover Plate",
+          partNo: "LP-CVR-02",
+          vendor: "",
+          qty: 42,
+          lowLimit: 20,
+          midLimit: 50,
+          photo: "",
+          bom: []
+        },
+        {
+          id: "as_1",
+          category: "assy",
+          name: "Bracket Mount Assy A1",
+          partNo: "AS-MNT-A1",
+          vendor: "",
+          qty: 28,
+          lowLimit: 10,
+          midLimit: 25,
+          photo: "",
+          bom: [
+            { partId: "cp_1", reqQty: 2 },
+            { partId: "cp_2", reqQty: 1 },
+            { partId: "lp_1", reqQty: 1 },
+            { partId: "lp_2", reqQty: 1 }
+          ]
+        }
+      ];
+
+      state.logs = [
+        {
+          id: "log_1",
+          dateTime: formatDateTimeForStorage(new Date(now - 3600000 * 3)),
+          type: "IN",
+          partId: "cp_1",
+          partName: "Hex Bolt M6x20",
+          category: "child",
+          qtyDelta: 100,
+          remark: "Vendor DO #88412"
+        },
+        {
+          id: "log_2",
+          dateTime: formatDateTimeForStorage(new Date(now - 3600000)),
+          type: "ASSY",
+          partId: "as_1",
+          partName: "Bracket Mount Assy A1",
+          category: "assy",
+          qtyDelta: 10,
+          remark: "Shift Morning Line 1 (Auto-deduct BOM)"
+        }
+      ];
+
+      persistData();
+      renderAll();
+      if (notify) showToast(t("toastSampleLoaded"), "success");
+    }
+
+    function persistData() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(state.parts));
+        localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(state.logs));
+      } catch (e) {
+        showToast("Storage full! Try removing some photos.", "error");
+      }
+    }
+
+    /* ---------------------------------------------------------
+       5. HELPERS (I18N, STATUS, ESTIMATED ASSY, DATE/TIME)
+       --------------------------------------------------------- */
+    function t(key) {
+      return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key;
+    }
+
+    function getStockStatus(part) {
+      const qty = Number(part.qty) || 0;
+      const low = Number(part.lowLimit) || 0;
+      const mid = Number(part.midLimit) || 0;
+      if (qty <= low) return { code: "LOW", cls: "badge-low" };
+      if (qty <= mid) return { code: "MID", cls: "badge-mid" };
+      return { code: "OK", cls: "badge-ok" };
+    }
+
+    /**
+     * Auto-calculates max Assy units possible based on current stock of Child & Loose parts in BOM
+     */
+    function calcEstimatedAssy(assyPart) {
+      if (!assyPart.bom || assyPart.bom.length === 0) {
+        return { possible: null, bottleneck: null, valid: false };
+      }
+      let minUnits = Infinity;
+      let bottleneckName = "";
+      let bottleneckStock = 0;
+
+      for (const item of assyPart.bom) {
+        const comp = state.parts.find(p => p.id === item.partId);
+        const req = Number(item.reqQty) || 1;
+        if (!comp) {
+          minUnits = 0;
+          bottleneckName = "Missing Part";
+          bottleneckStock = 0;
+          break;
+        }
+        const canMake = Math.floor((Number(comp.qty) || 0) / req);
+        if (canMake < minUnits) {
+          minUnits = canMake;
+          bottleneckName = comp.name;
+          bottleneckStock = comp.qty;
+        }
+      }
+
+      return {
+        possible: minUnits === Infinity ? 0 : Math.max(0, minUnits),
+        bottleneck: bottleneckName,
+        bottleneckStock,
+        valid: true
+      };
+    }
+
+    function getLocalDateTimeInputValue(date = new Date()) {
+      const pad = n => String(n).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    }
+
+    function formatDateTimeForStorage(date = new Date()) {
+      return getLocalDateTimeInputValue(date);
+    }
+
+    function formatDisplayDateTime(dtStr) {
+      if (!dtStr) return "-";
+      const [datePart, timePart] = dtStr.split("T");
+      if (!datePart) return dtStr;
+      const [y, m, d] = datePart.split("-");
+      return `${d}/${m}/${y} ${timePart || ""}`.trim();
+    }
+
+    function isToday(dtStr) {
+      if (!dtStr) return false;
+      const todayPrefix = getLocalDateTimeInputValue().split("T")[0];
+      return dtStr.startsWith(todayPrefix);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    /* ---------------------------------------------------------
+       6. THEME & LANGUAGE SWITCHERS
+       --------------------------------------------------------- */
+    function applyTheme(themeId) {
+      state.theme = themeId;
+      document.documentElement.setAttribute("data-theme", themeId);
+      localStorage.setItem(STORAGE_KEYS.THEME, themeId);
+      const themeObj = THEMES.find(th => th.id === themeId);
+      if (themeObj) {
+        document.getElementById("metaThemeColor").setAttribute("content", themeObj.meta);
+      }
+      renderThemeGrid();
+    }
+
+    function cycleTheme() {
+      const idx = THEMES.findIndex(th => th.id === state.theme);
+      const next = THEMES[(idx + 1) % THEMES.length];
+      applyTheme(next.id);
+      showToast(`Theme: ${next.name}`, "info");
+    }
+
+    function renderThemeGrid() {
+      const container = document.getElementById("themeGrid");
+      if (!container) return;
+      container.innerHTML = THEMES.map(th => {
+        const active = th.id === state.theme;
+        return `
+          <button onclick="applyTheme('${th.id}')" class="p-3 rounded-xl border text-left transition active:scale-[0.97] ${active ? 'ring-2' : ''}"
+            style="background: ${th.bg}; border-color: ${active ? th.accent : 'var(--border-color)'}; --tw-ring-color: ${th.accent};">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-1">
+                <span class="w-4 h-4 rounded-full border border-black/15" style="background: ${th.card};"></span>
+                <span class="w-4 h-4 rounded-full" style="background: ${th.accent};"></span>
+              </div>
+              ${active ? `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded" style="background:${th.accent}; color:#fff;">✓</span>` : ""}
+            </div>
+            <div class="text-xs font-bold truncate" style="color: ${th.id === 'light' || th.id === 'sunset' ? '#1e293b' : '#f8fafc'};">${th.name}</div>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function toggleLanguage() {
+      setLanguage(state.lang === "en" ? "bm" : "en");
+    }
+
+    function setLanguage(lang) {
+      state.lang = lang;
+      localStorage.setItem(STORAGE_KEYS.LANG, lang);
+      applyLanguage();
+      renderAll();
+    }
+
+    function applyLanguage() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.setAttribute("placeholder", t(key));
+      });
+      document.getElementById("btnLangToggle").textContent = state.lang === "en" ? "EN ⇄ BM" : "BM ⇄ EN";
+
+      // Update Settings language buttons
+      const enBtn = document.getElementById("langBtnEn");
+      const bmBtn = document.getElementById("langBtnBm");
+      if (enBtn && bmBtn) {
+        const activeStyle = "background: var(--accent-soft); border-color: var(--accent); color: var(--accent);";
+        const idleStyle = "background: var(--bg-elevated); border-color: var(--border-color); color: var(--text-secondary);";
+        enBtn.setAttribute("style", state.lang === "en" ? activeStyle : idleStyle);
+        bmBtn.setAttribute("style", state.lang === "bm" ? activeStyle : idleStyle);
+      }
+    }
+
+    /* ---------------------------------------------------------
+       7. NAVIGATION
+       --------------------------------------------------------- */
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      ["dashboard", "stock", "history", "settings"].forEach(tab => {
+        const sec = document.getElementById(`tab-${tab}`);
+        if (sec) sec.classList.toggle("hidden", tab !== tabName);
+      });
+
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        const active = btn.getAttribute("data-tab") === tabName;
+        btn.style.color = active ? "var(--accent)" : "var(--text-muted)";
+      });
+
+      renderAll();
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderStock();
+      renderHistory();
+    }
+
+    /* ---------------------------------------------------------
+       8. RENDER DASHBOARD
+       --------------------------------------------------------- */
+    function renderDashboard() {
+      const total = state.parts.length;
+      const lowCount = state.parts.filter(p => getStockStatus(p).code === "LOW").length;
+      const todayCount = state.logs.filter(l => isToday(l.dateTime)).length;
+
+      document.getElementById("kpiTotal").textContent = total;
+      document.getElementById("kpiLow").textContent = lowCount;
+      document.getElementById("kpiToday").textContent = todayCount;
+
+      // Estimated Assy Cards
+      const assyParts = state.parts.filter(p => p.category === "assy");
+      const assyContainer = document.getElementById("dashAssyContainer");
+
+      if (assyParts.length === 0) {
+        assyContainer.innerHTML = `<div class="bevel-card p-5 text-center text-xs" style="color: var(--text-muted);">${t("noAssyYet")}</div>`;
+      } else {
+        assyContainer.innerHTML = assyParts.map(p => {
+          const est = calcEstimatedAssy(p);
+          const status = getStockStatus(p);
+          return `
+            <div class="bevel-card p-4 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                ${renderThumb(p, "w-12 h-12")}
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="text-sm font-bold truncate">${escapeHtml(p.name)}</h3>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md ${status.cls}">${status.code}</span>
+                  </div>
+                  <div class="text-xs mt-0.5" style="color: var(--text-secondary);">
+                    ${t("currentStockTxt")}: <strong>${p.qty}</strong> pcs
+                  </div>
+                  ${est.valid ? `
+                    <div class="text-[11px] mt-1 font-medium truncate" style="color: var(--text-muted);">
+                      ${t("limitedBy")}: <span class="font-bold text-amber-500">${escapeHtml(est.bottleneck)}</span> (${est.bottleneckStock})
+                    </div>
+                  ` : `
+                    <div class="text-[11px] mt-1 italic" style="color: var(--text-muted);">${t("noBomSet")}</div>
+                  `}
+                </div>
+              </div>
+
+              <div class="text-right shrink-0 flex flex-col items-end gap-1.5">
+                <div class="px-2.5 py-1 rounded-xl text-center" style="background: var(--accent-soft); color: var(--accent);">
+                  <div class="text-[10px] font-bold uppercase leading-tight">${t("estCanAssy")}</div>
+                  <div class="text-lg font-extrabold leading-tight">${est.valid ? est.possible : "-"}</div>
+                </div>
+                ${est.valid ? `
+                  <button onclick="openAssyModal('${p.id}')" class="btn-accent px-3 py-1 text-[11px]">${t("btnProduce")}</button>
+                ` : ""}
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      // Low & Mid Stock Alerts
+      const alerts = state.parts
+        .map(p => ({ part: p, status: getStockStatus(p) }))
+        .filter(x => x.status.code === "LOW" || x.status.code === "MID")
+        .sort((a, b) => (a.status.code === "LOW" ? -1 : 1));
+
+      const alertContainer = document.getElementById("dashAlertsContainer");
+      if (alerts.length === 0) {
+        alertContainer.innerHTML = `
+          <div class="bevel-card p-4 flex items-center gap-2.5 text-xs font-semibold text-emerald-500">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>${t("allStockHealthy")}</span>
+          </div>
+        `;
+      } else {
+        alertContainer.innerHTML = alerts.map(({ part, status }) => `
+          <div class="bevel-card p-3 flex items-center justify-between gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
+              ${renderThumb(part, "w-10 h-10")}
+              <div class="min-w-0">
+                <div class="text-xs font-bold truncate">${escapeHtml(part.name)}</div>
+                <div class="text-[11px] truncate" style="color: var(--text-muted);">
+                  ${part.category === "child" ? `${t("vendorLabel")}: ${escapeHtml(part.vendor)}` : t("inHouseLabel")}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <div class="text-right">
+                <div class="text-sm font-extrabold">${part.qty}</div>
+                <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${status.cls}">${status.code}</span>
+              </div>
+              <button onclick="openTxModal('IN', '${part.id}')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-500 text-xs font-bold">+ IN</button>
+            </div>
+          </div>
+        `).join("");
+      }
+    }
+
+    /* ---------------------------------------------------------
+       9. RENDER STOCK INVENTORY
+       --------------------------------------------------------- */
+    function setStockFilter(cat) {
+      state.stockFilter = cat;
+      renderStock();
+    }
+
+    function renderStock() {
+      // Update category pill styles
+      document.querySelectorAll(".cat-pill").forEach(btn => {
+        const active = btn.getAttribute("data-cat") === state.stockFilter;
+        if (active) {
+          btn.style.background = "var(--accent)";
+          btn.style.color = "var(--accent-text)";
+          btn.style.border = "1px solid var(--accent)";
+        } else {
+          btn.style.background = "var(--bg-card)";
+          btn.style.color = "var(--text-secondary)";
+          btn.style.border = "1px solid var(--border-color)";
+        }
+      });
+
+      const q = (document.getElementById("stockSearch")?.value || "").trim().toLowerCase();
+      const filtered = state.parts.filter(p => {
+        const matchCat = state.stockFilter === "all" || p.category === state.stockFilter;
+        const matchQuery = !q ||
+          p.name.toLowerCase().includes(q) ||
+          (p.partNo && p.partNo.toLowerCase().includes(q)) ||
+          (p.vendor && p.vendor.toLowerCase().includes(q));
+        return matchCat && matchQuery;
+      });
+
+      const container = document.getElementById("stockListContainer");
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bevel-card p-8 text-center text-xs" style="color: var(--text-muted);">${t("noPartsFound")}</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => {
+        const status = getStockStatus(p);
+        const catBadgeMap = {
+          child: { label: "CHILD", cls: "bg-blue-500/15 text-blue-500" },
+          loose: { label: "LOOSE", cls: "bg-purple-500/15 text-purple-500" },
+          assy: { label: "ASSY", cls: "bg-emerald-500/15 text-emerald-500" }
+        };
+        const catBadge = catBadgeMap[p.category];
+        const est = p.category === "assy" ? calcEstimatedAssy(p) : null;
+
+        return `
+          <div class="bevel-card p-3.5 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3 min-w-0">
+                ${renderThumb(p, "w-14 h-14")}
+                <div class="min-w-0">
+                  <div class="flex items-center flex-wrap gap-1.5">
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${catBadge.cls}">${catBadge.label}</span>
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${status.cls}">${status.code}</span>
+                    ${p.partNo ? `<span class="text-[10px] font-mono" style="color: var(--text-muted);">${escapeHtml(p.partNo)}</span>` : ""}
+                  </div>
+                  <h3 class="text-sm font-bold mt-1 leading-snug break-words">${escapeHtml(p.name)}</h3>
+                  ${p.category === "child" ? `
+                    <p class="text-[11px] mt-0.5 truncate" style="color: var(--text-secondary);">
+                      ${t("vendorLabel")}: <span class="font-semibold">${escapeHtml(p.vendor || "-")}</span>
+                    </p>
+                  ` : ""}
+                  ${est && est.valid ? `
+                    <div class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-lg" style="background: var(--accent-soft); color: var(--accent);">
+                      <span>${t("estCanAssy")}: ${est.possible}</span>
+                      <span class="opacity-75 font-medium">(${escapeHtml(est.bottleneck)})</span>
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+
+              <div class="text-right shrink-0">
+                <div class="text-2xl font-extrabold leading-none">${p.qty}</div>
+                <div class="text-[10px] font-semibold mt-1" style="color: var(--text-muted);">pcs</div>
+              </div>
+            </div>
+
+            <!-- Action Buttons Row -->
+            <div class="pt-2.5 border-t flex items-center justify-between gap-1.5 flex-wrap" style="border-color: var(--border-color);">
+              <div class="flex items-center gap-1.5">
+                <button onclick="openTxModal('IN', '${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-500 text-[11px] font-extrabold active:scale-95">+ IN</button>
+                <button onclick="openTxModal('OUT', '${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-amber-500/15 text-amber-500 text-[11px] font-extrabold active:scale-95">- OUT</button>
+                <button onclick="openTxModal('NG', '${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-500/15 text-red-500 text-[11px] font-extrabold active:scale-95">! NG</button>
+                ${p.category === "assy" && p.bom && p.bom.length > 0 ? `
+                  <button onclick="openAssyModal('${p.id}')" class="btn-soft px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold">${t("btnProduce")}</button>
+                ` : ""}
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <button onclick="openPartModal('${p.id}')" class="btn-ghost px-2.5 py-1.5 text-[11px] font-semibold">${t("btnEdit")}</button>
+                <button onclick="confirmDeletePart('${p.id}')" class="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10" aria-label="Delete">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderThumb(part, sizeClass = "w-12 h-12") {
+      if (part.photo) {
+        return `
+          <img src="${part.photo}" alt="${escapeHtml(part.name)}"
+            onclick="openPhotoLightbox('${part.id}')"
+            class="${sizeClass} rounded-xl object-cover shrink-0 cursor-pointer border"
+            style="border-color: var(--border-color);" />
+        `;
+      }
+      const initials = (part.name || "P").substring(0, 2).toUpperCase();
+      return `
+        <div class="${sizeClass} rounded-xl shrink-0 flex items-center justify-center font-extrabold text-xs border"
+          style="background: var(--bg-elevated); color: var(--text-muted); border-color: var(--border-color);">
+          ${escapeHtml(initials)}
+        </div>
+      `;
+    }
+
+    /* ---------------------------------------------------------
+       10. RENDER HISTORY / LOG
+       --------------------------------------------------------- */
+    function setHistoryFilter(type) {
+      state.historyFilter = type;
+      renderHistory();
+    }
+
+    function renderHistory() {
+      document.querySelectorAll(".hist-pill").forEach(btn => {
+        const active = btn.getAttribute("data-hcat") === state.historyFilter;
+        if (active) {
+          btn.style.background = "var(--accent)";
+          btn.style.color = "var(--accent-text)";
+          btn.style.border = "1px solid var(--accent)";
+        } else {
+          btn.style.background = "var(--bg-card)";
+          btn.style.color = "var(--text-secondary)";
+          btn.style.border = "1px solid var(--border-color)";
+        }
+      });
+
+      const q = (document.getElementById("historySearch")?.value || "").trim().toLowerCase();
+      const filtered = state.logs
+        .filter(l => {
+          const matchType = state.historyFilter === "ALL" || l.type === state.historyFilter;
+          const matchQ = !q ||
+            (l.partName && l.partName.toLowerCase().includes(q)) ||
+            (l.remark && l.remark.toLowerCase().includes(q));
+          return matchType && matchQ;
+        })
+        .sort((a, b) => (b.dateTime || "").localeCompare(a.dateTime || ""));
+
+      const container = document.getElementById("historyListContainer");
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bevel-card p-8 text-center text-xs" style="color: var(--text-muted);">${t("noHistoryFound")}</div>`;
+        return;
+      }
+
+      const typeStyles = {
+        IN: "bg-emerald-500/15 text-emerald-500",
+        ASSY: "bg-blue-500/15 text-blue-500",
+        OUT: "bg-amber-500/15 text-amber-500",
+        NG: "bg-red-500/15 text-red-500"
+      };
+
+      container.innerHTML = filtered.map(l => {
+        const deltaColor = l.qtyDelta >= 0 ? "text-emerald-500" : "text-red-500";
+        const deltaStr = l.qtyDelta >= 0 ? `+${l.qtyDelta}` : `${l.qtyDelta}`;
+        return `
+          <div class="bevel-card p-3.5 flex items-center justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-md ${typeStyles[l.type] || ''}">${l.type}</span>
+                <span class="text-[11px] font-medium" style="color: var(--text-muted);">${formatDisplayDateTime(l.dateTime)}</span>
+              </div>
+              <div class="text-sm font-bold truncate">${escapeHtml(l.partName)}</div>
+              ${l.remark ? `<div class="text-xs truncate" style="color: var(--text-secondary);">${escapeHtml(l.remark)}</div>` : ""}
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-lg font-extrabold ${deltaColor}">${deltaStr}</div>
+              <div class="text-[10px] uppercase font-semibold" style="color: var(--text-muted);">${l.category || ""}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /* ---------------------------------------------------------
+       11. ADD / EDIT PART MODAL & PHOTO COMPRESSION
+       --------------------------------------------------------- */
+    function openPartModal(partId = null) {
+      const part = partId ? state.parts.find(p => p.id === partId) : null;
+      document.getElementById("partId").value = part ? part.id : "";
+      document.getElementById("partModalTitle").textContent = part ? t("modalEditPart") : t("modalAddPart");
+
+      document.getElementById("partName").value = part ? part.name : "";
+      document.getElementById("partNo").value = part ? (part.partNo || "") : "";
+      document.getElementById("partVendor").value = part ? (part.vendor || "") : "";
+      document.getElementById("partQty").value = part ? part.qty : 0;
+      document.getElementById("partLow").value = part ? part.lowLimit : 20;
+      document.getElementById("partMid").value = part ? part.midLimit : 50;
+
+      state.editPhotoData = part ? (part.photo || "") : "";
+      state.editBom = part && part.bom ? JSON.parse(JSON.stringify(part.bom)) : [];
+      document.getElementById("partPhotoInput").value = "";
+
+      updatePhotoPreviewUI();
+      selectPartCategory(part ? part.category : "child");
+      openModal("partModal");
+    }
+
+    function selectPartCategory(cat) {
+      state.editCategory = cat;
+      document.querySelectorAll(".pcat-btn").forEach(btn => {
+        const active = btn.getAttribute("data-pcat") === cat;
+        btn.style.background = active ? "var(--accent-soft)" : "var(--bg-elevated)";
+        btn.style.borderColor = active ? "var(--accent)" : "var(--border-color)";
+        btn.style.color = active ? "var(--accent)" : "var(--text-secondary)";
+      });
+
+      document.getElementById("vendorFieldWrapper").classList.toggle("hidden", cat !== "child");
+      document.getElementById("bomBuilderWrapper").classList.toggle("hidden", cat !== "assy");
+
+      if (cat === "assy") {
+        populateBomDropdown();
+        renderBomEditorList();
+      }
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Auto-compress via HTML5 Canvas to max 300px, JPEG 0.7
+          const maxDim = 300;
+          let w = img.width;
+          let h = img.height;
+          if (w > h && w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else if (h >= w && h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          state.editPhotoData = canvas.toDataURL("image/jpeg", 0.7);
+          updatePhotoPreviewUI();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePartPhoto() {
+      state.editPhotoData = "";
+      document.getElementById("partPhotoInput").value = "";
+      updatePhotoPreviewUI();
+    }
+
+    function updatePhotoPreviewUI() {
+      const preview = document.getElementById("partPhotoPreview");
+      const removeBtn = document.getElementById("btnRemovePhoto");
+      if (state.editPhotoData) {
+        preview.innerHTML = `<img src="${state.editPhotoData}" class="w-full h-full object-cover" />`;
+        removeBtn.classList.remove("hidden");
+      } else {
+        preview.innerHTML = `<svg class="w-7 h-7" style="color: var(--text-muted);" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+        removeBtn.classList.add("hidden");
+      }
+    }
+
+    function populateBomDropdown() {
+      const sel = document.getElementById("bomPartSelect");
+      const components = state.parts.filter(p => p.category === "child" || p.category === "loose");
+      if (components.length === 0) {
+        sel.innerHTML = `<option value="">-- No Child/Loose Parts --</option>`;
+        return;
+      }
+      sel.innerHTML = components.map(p =>
+        `<option value="${p.id}">[${p.category.toUpperCase()}] ${escapeHtml(p.name)}</option>`
+      ).join("");
+    }
+
+    function addBomRow() {
+      const partId = document.getElementById("bomPartSelect").value;
+      const reqQty = parseInt(document.getElementById("bomReqQty").value, 10);
+      if (!partId || isNaN(reqQty) || reqQty <= 0) return;
+
+      const existing = state.editBom.find(b => b.partId === partId);
+      if (existing) {
+        existing.reqQty = reqQty;
+      } else {
+        state.editBom.push({ partId, reqQty });
+      }
+      renderBomEditorList();
+    }
+
+    function removeBomRow(partId) {
+      state.editBom = state.editBom.filter(b => b.partId !== partId);
+      renderBomEditorList();
+    }
+
+    function renderBomEditorList() {
+      const container = document.getElementById("bomListContainer");
+      if (state.editBom.length === 0) {
+        container.innerHTML = `<p class="text-[11px] italic" style="color: var(--text-muted);">${t("noBomSet")}</p>`;
+        return;
+      }
+      container.innerHTML = state.editBom.map(item => {
+        const comp = state.parts.find(p => p.id === item.partId);
+        return `
+          <div class="flex items-center justify-between px-3 py-2 rounded-xl border text-xs" style="background: var(--bg-card); border-color: var(--border-color);">
+            <span class="font-semibold truncate">${comp ? escapeHtml(comp.name) : "Unknown Part"}</span>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="font-extrabold" style="color: var(--accent);">× ${item.reqQty}</span>
+              <button type="button" onclick="removeBomRow('${item.partId}')" class="text-red-500 font-bold px-1">✕</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function savePart() {
+      const id = document.getElementById("partId").value;
+      const name = document.getElementById("partName").value.trim();
+      const partNo = document.getElementById("partNo").value.trim();
+      const vendor = document.getElementById("partVendor").value.trim();
+      const qty = Math.max(0, parseInt(document.getElementById("partQty").value, 10) || 0);
+      const lowLimit = Math.max(0, parseInt(document.getElementById("partLow").value, 10) || 0);
+      const midLimit = Math.max(lowLimit, parseInt(document.getElementById("partMid").value, 10) || 0);
+
+      if (!name) return showToast(t("errNameRequired"), "error");
+      if (state.editCategory === "child" && !vendor) return showToast(t("errVendorRequired"), "error");
+
+      const partObj = {
+        id: id || "p_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        category: state.editCategory,
+        name,
+        partNo,
+        vendor: state.editCategory === "child" ? vendor : "",
+        qty,
+        lowLimit,
+        midLimit,
+        photo: state.editPhotoData,
+        bom: state.editCategory === "assy" ? state.editBom : []
+      };
+
+      if (id) {
+        const idx = state.parts.findIndex(p => p.id === id);
+        if (idx !== -1) state.parts[idx] = partObj;
+      } else {
+        state.parts.unshift(partObj);
+      }
+
+      persistData();
+      closeModal("partModal");
+      renderAll();
+      showToast(t("toastSaved"), "success");
+    }
+
+    function confirmDeletePart(partId) {
+      openConfirmModal(t("confirmDeleteTitle"), t("confirmDeleteMsg"), () => {
+        state.parts = state.parts.filter(p => p.id !== partId);
+        // Clean references in BOMs
+        state.parts.forEach(p => {
+          if (p.bom && p.bom.length) {
+            p.bom = p.bom.filter(b => b.partId !== partId);
+          }
+        });
+        persistData();
+        renderAll();
+        showToast(t("toastDeleted"), "info");
+      });
+    }
+
+    /* ---------------------------------------------------------
+       12. TRANSACTIONS (IN / OUT / NG)
+       --------------------------------------------------------- */
+    function openTxModal(type = "IN", preselectPartId = null) {
+      if (state.parts.length === 0) {
+        return showToast(t("errNoParts"), "error");
+      }
+      const sel = document.getElementById("txPartSelect");
+      sel.innerHTML = state.parts.map(p =>
+        `<option value="${p.id}">[${p.category.toUpperCase()}] ${escapeHtml(p.name)}</option>`
+      ).join("");
+
+      if (preselectPartId) sel.value = preselectPartId;
+
+      document.getElementById("txQty").value = 1;
+      document.getElementById("txDateTime").value = getLocalDateTimeInputValue();
+      document.getElementById("txRemark").value = "";
+
+      setTxType(type);
+      updateTxStockPreview();
+      openModal("txModal");
+    }
+
+    function setTxType(type) {
+      state.txType = type;
+      const colorMap = {
+        IN: { bg: "rgba(16,185,129,0.16)", border: "#10b981", text: "#10b981" },
+        OUT: { bg: "rgba(245,158,11,0.16)", border: "#f59e0b", text: "#f59e0b" },
+        NG: { bg: "rgba(239,68,68,0.16)", border: "#ef4444", text: "#ef4444" }
+      };
+      document.querySelectorAll(".txtype-btn").forEach(btn => {
+        const bType = btn.getAttribute("data-txtype");
+        const active = bType === type;
+        if (active) {
+          btn.style.background = colorMap[bType].bg;
+          btn.style.borderColor = colorMap[bType].border;
+          btn.style.color = colorMap[bType].text;
+        } else {
+          btn.style.background = "var(--bg-elevated)";
+          btn.style.borderColor = "var(--border-color)";
+          btn.style.color = "var(--text-secondary)";
+        }
+      });
+
+      const remarkLbl = document.getElementById("txRemarkLabel");
+      remarkLbl.textContent = type === "NG" ? t("lblNgReason") : t("lblRemark");
+    }
+
+    function updateTxStockPreview() {
+      const partId = document.getElementById("txPartSelect").value;
+      const part = state.parts.find(p => p.id === partId);
+      const infoEl = document.getElementById("txCurrentStockInfo");
+      if (part) {
+        infoEl.innerHTML = `${t("currentStockTxt")}: <strong>${part.qty} pcs</strong>`;
+      } else {
+        infoEl.textContent = "";
+      }
+    }
+
+    function submitTransaction() {
+      const partId = document.getElementById("txPartSelect").value;
+      const qty = parseInt(document.getElementById("txQty").value, 10);
+      const dateTime = document.getElementById("txDateTime").value || getLocalDateTimeInputValue();
+      const remark = document.getElementById("txRemark").value.trim();
+
+      if (isNaN(qty) || qty <= 0) return showToast(t("errInvalidQty"), "error");
+
+      const part = state.parts.find(p => p.id === partId);
+      if (!part) return;
+
+      if ((state.txType === "OUT" || state.txType === "NG") && part.qty < qty) {
+        return showToast(t("errInsufficientStock"), "error");
+      }
+
+      const delta = state.txType === "IN" ? qty : -qty;
+      part.qty += delta;
+
+      state.logs.unshift({
+        id: "log_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+        dateTime,
+        type: state.txType,
+        partId: part.id,
+        partName: part.name,
+        category: part.category,
+        qtyDelta: delta,
+        remark
+      });
+
+      persistData();
+      closeModal("txModal");
+      renderAll();
+      showToast(t("toastTxSuccess"), "success");
+    }
+
+    /* ---------------------------------------------------------
+       13. PRODUCE ASSY (AUTO-DEDUCT BOM)
+       --------------------------------------------------------- */
+    function openAssyModal(preselectAssyId = null) {
+      const assyParts = state.parts.filter(p => p.category === "assy");
+      if (assyParts.length === 0) {
+        return showToast(t("errNoAssyParts"), "error");
+      }
+
+      const sel = document.getElementById("assyPartSelect");
+      sel.innerHTML = assyParts.map(p =>
+        `<option value="${p.id}">${escapeHtml(p.name)} (${t("currentStockTxt")}: ${p.qty})</option>`
+      ).join("");
+
+      if (preselectAssyId) sel.value = preselectAssyId;
+
+      document.getElementById("assyProduceQty").value = 1;
+      document.getElementById("assyDateTime").value = getLocalDateTimeInputValue();
+      document.getElementById("assyRemark").value = "";
+
+      renderAssyDeductionPreview();
+      openModal("assyModal");
+    }
+
+    function renderAssyDeductionPreview() {
+      const assyId = document.getElementById("assyPartSelect").value;
+      const qty = Math.max(0, parseInt(document.getElementById("assyProduceQty").value, 10) || 0);
+      const assy = state.parts.find(p => p.id === assyId);
+
+      const listEl = document.getElementById("assyPreviewList");
+      const warnEl = document.getElementById("assyShortageWarning");
+      const badgeEl = document.getElementById("assyMaxEstBadge");
+      const confirmBtn = document.getElementById("btnConfirmAssy");
+
+      if (!assy || !assy.bom || assy.bom.length === 0) {
+        badgeEl.textContent = "-";
+        listEl.innerHTML = `<p class="text-xs italic" style="color: var(--text-muted);">${t("noBomSet")}</p>`;
+        warnEl.classList.add("hidden");
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = "1";
+        return;
+      }
+
+      const est = calcEstimatedAssy(assy);
+      badgeEl.textContent = `Max: ${est.possible}`;
+
+      let hasShortage = false;
+      listEl.innerHTML = assy.bom.map(item => {
+        const comp = state.parts.find(p => p.id === item.partId);
+        const needed = item.reqQty * qty;
+        const available = comp ? comp.qty : 0;
+        const ok = available >= needed;
+        if (!ok) hasShortage = true;
+
+        return `
+          <div class="flex items-center justify-between text-xs px-2.5 py-2 rounded-lg border" style="background: var(--bg-card); border-color: ${ok ? 'var(--border-color)' : 'rgba(239,68,68,0.45)'};">
+            <span class="font-semibold truncate pr-2">${comp ? escapeHtml(comp.name) : "Missing"}</span>
+            <div class="shrink-0 flex items-center gap-2">
+              <span class="${ok ? 'text-emerald-500' : 'text-red-500'} font-extrabold">-${needed}</span>
+              <span class="text-[11px]" style="color: var(--text-muted);">(${t("haveTxt")}: ${available})</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (hasShortage) {
+        warnEl.textContent = t("shortageWarningTxt");
+        warnEl.classList.remove("hidden");
+        confirmBtn.disabled = true;
+        confirmBtn.style.opacity = "0.5";
+      } else {
+        warnEl.classList.add("hidden");
+        confirmBtn.disabled = false;
+        confirmBtn.style.opacity = "1";
+      }
+    }
+
+    function submitProduceAssy() {
+      const assyId = document.getElementById("assyPartSelect").value;
+      const qty = parseInt(document.getElementById("assyProduceQty").value, 10);
+      const dateTime = document.getElementById("assyDateTime").value || getLocalDateTimeInputValue();
+      const remark = document.getElementById("assyRemark").value.trim();
+
+      if (isNaN(qty) || qty <= 0) return showToast(t("errInvalidQty"), "error");
+      const assy = state.parts.find(p => p.id === assyId);
+      if (!assy) return;
+
+      // Validate BOM stock again
+      if (assy.bom && assy.bom.length > 0) {
+        for (const item of assy.bom) {
+          const comp = state.parts.find(p => p.id === item.partId);
+          if (!comp || comp.qty < item.reqQty * qty) {
+            return showToast(t("shortageWarningTxt"), "error");
+          }
+        }
+        // Deduct each component and log OUT for traceability
+        assy.bom.forEach(item => {
+          const comp = state.parts.find(p => p.id === item.partId);
+          const deduct = item.reqQty * qty;
+          comp.qty -= deduct;
+          state.logs.unshift({
+            id: "log_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
+            dateTime,
+            type: "OUT",
+            partId: comp.id,
+            partName: comp.name,
+            category: comp.category,
+            qtyDelta: -deduct,
+            remark: `Used for Assy: ${assy.name} (×${qty})${remark ? " - " + remark : ""}`
+          });
+        });
+      }
+
+      // Add Assy stock & log ASSY
+      assy.qty += qty;
+      state.logs.unshift({
+        id: "log_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
+        dateTime,
+        type: "ASSY",
+        partId: assy.id,
+        partName: assy.name,
+        category: "assy",
+        qtyDelta: qty,
+        remark: remark || "Assy Produced (BOM Auto-Deducted)"
+      });
+
+      persistData();
+      closeModal("assyModal");
+      renderAll();
+      showToast(t("toastAssySuccess"), "success");
+    }
+
+    /* ---------------------------------------------------------
+       14. EXPORT TO EXCEL (.xlsx) WITH OFFLINE CSV FALLBACK
+       --------------------------------------------------------- */
+    function exportToExcel() {
+      const stockRows = state.parts.map(p => {
+        const status = getStockStatus(p).code;
+        const est = p.category === "assy" ? calcEstimatedAssy(p) : null;
+        return {
+          "Category": p.category.toUpperCase(),
+          "Part No": p.partNo || "-",
+          "Part Name": p.name,
+          "Vendor": p.category === "child" ? (p.vendor || "-") : "In-House",
+          "Current Qty": p.qty,
+          "Status": status,
+          "Low Limit": p.lowLimit,
+          "Mid Limit": p.midLimit,
+          "Est. Can Assy": est && est.valid ? est.possible : "-",
+          "Bottleneck Part": est && est.valid ? est.bottleneck : "-"
+        };
+      });
+
+      const logRows = state.logs.map(l => ({
+        "Date & Time": formatDisplayDateTime(l.dateTime),
+        "Type": l.type,
+        "Category": (l.category || "").toUpperCase(),
+        "Part Name": l.partName,
+        "Qty Change": l.qtyDelta,
+        "Remark": l.remark || "-"
+      }));
+
+      const dateTag = getLocalDateTimeInputValue().split("T")[0];
+
+      // Use SheetJS if available
+      if (typeof XLSX !== "undefined") {
+        try {
+          const wb = XLSX.utils.book_new();
+          const wsStock = XLSX.utils.json_to_sheet(stockRows.length ? stockRows : [{ Info: "No Stock Data" }]);
+          const wsLogs = XLSX.utils.json_to_sheet(logRows.length ? logRows : [{ Info: "No Transactions" }]);
+
+          XLSX.utils.book_append_sheet(wb, wsStock, "Stock_Inventory");
+          XLSX.utils.book_append_sheet(wb, wsLogs, "Transaction_History");
+          XLSX.writeFile(wb, `StockFlow_Pro_${dateTag}.xlsx`);
+          showToast(t("toastExcelDone"), "success");
+          return;
+        } catch (err) {
+          console.error("SheetJS error, falling back to CSV:", err);
+        }
+      }
+
+      // Offline UTF-8 BOM CSV Fallback
+      downloadCSV(stockRows, `StockFlow_Inventory_${dateTag}.csv`);
+      setTimeout(() => downloadCSV(logRows, `StockFlow_History_${dateTag}.csv`), 350);
+      showToast(t("toastCsvFallback"), "info");
+    }
+
+    function downloadCSV(rows, filename) {
+      if (!rows || rows.length === 0) return;
+      const headers = Object.keys(rows[0]);
+      const csvLines = [
+        headers.join(","),
+        ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))
+      ];
+      const blob = new Blob(["\uFEFF" + csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      triggerDownload(blob, filename);
+    }
+
+    /* ---------------------------------------------------------
+       15. BACKUP / RESTORE JSON & DATA UTILITIES
+       --------------------------------------------------------- */
+    function exportBackupJSON() {
+      const payload = {
+        app: "StockFlow Pro",
+        version: "1.0",
+        exportedAt: new Date().toISOString(),
+        parts: state.parts,
+        logs: state.logs
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const dateTag = getLocalDateTimeInputValue().split("T")[0];
+      triggerDownload(blob, `StockFlow_Backup_${dateTag}.json`);
+      showToast(t("toastBackupDone"), "success");
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!Array.isArray(data.parts) || !Array.isArray(data.logs)) {
+            throw new Error("Invalid structure");
+          }
+          state.parts = data.parts;
+          state.logs = data.logs;
+          persistData();
+          renderAll();
+          showToast(t("toastRestoreDone"), "success");
+        } catch (err) {
+          showToast(t("toastInvalidFile"), "error");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function confirmLoadSample() {
+      openConfirmModal(t("confirmSampleTitle"), t("confirmSampleMsg"), () => {
+        loadSampleData(true);
+      });
+    }
+
+    function confirmClearAll() {
+      openConfirmModal(t("confirmClearTitle"), t("confirmClearMsg"), () => {
+        state.parts = [];
+        state.logs = [];
+        persistData();
+        renderAll();
+        showToast(t("toastCleared"), "info");
+      });
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ---------------------------------------------------------
+       16. MODALS, LIGHTBOX & TOAST HELPERS
+       --------------------------------------------------------- */
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove("hidden");
+        el.classList.add("flex");
+      }
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add("hidden");
+        el.classList.remove("flex");
+      }
+    }
+
+    function openPhotoLightbox(partId) {
+      const part = state.parts.find(p => p.id === partId);
+      if (!part || !part.photo) return;
+      document.getElementById("photoModalImg").src = part.photo;
+      document.getElementById("photoModalCaption").textContent = part.name;
+      openModal("photoModal");
+    }
+
+    function openConfirmModal(title, msg, onConfirm) {
+      document.getElementById("confirmTitle").textContent = title;
+      document.getElementById("confirmMessage").textContent = msg;
+      const okBtn = document.getElementById("confirmOkBtn");
+      okBtn.onclick = () => {
+        closeModal("confirmModal");
+        onConfirm();
+      };
+      openModal("confirmModal");
+    }
+
+    let toastTimer = null;
+    function showToast(message, type = "info") {
+      const el = document.getElementById("toast");
+      const bgMap = {
+        success: "#059669",
+        error: "#dc2626",
+        info: "#2563eb"
+      };
+      el.style.backgroundColor = bgMap[type] || bgMap.info;
+      el.textContent = message;
+      el.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.add("hidden"), 2600);
+    }
+
+    // Boot app on load
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
