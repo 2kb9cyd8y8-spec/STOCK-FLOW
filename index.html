@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="STOCK RECORD" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#eef2f6" id="metaThemeColor" />
-  <title>STOCK RECORD v4.0</title>
+  <title>STOCK RECORD v5.0</title>
 
   <!-- Inter & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,9 +21,13 @@
   <!-- SheetJS for Excel (.xlsx) Export -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
+  <!-- Firebase JS SDK v10 (Compat) for Realtime Database Live Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
   <style>
     /* =========================================================================
-       8 PREMIUM THEMES (CSS CUSTOM PROPERTIES)
+       8 SELECTABLE THEMES (CSS CUSTOM PROPERTIES)
        ========================================================================= */
     :root,
     [data-theme="light"] {
@@ -31,7 +35,7 @@
       --bg-surface: #ffffff;
       --bg-elevated: #f5f7fa;
       --bg-input: #eef2f7;
-      --bg-glass: rgba(238, 242, 246, 0.86);
+      --bg-glass: rgba(238, 242, 246, 0.88);
       --text-main: #0f172a;
       --text-sub: #475569;
       --text-muted: #7c8b9e;
@@ -56,7 +60,7 @@
       --bg-surface: #161920;
       --bg-elevated: #1e222b;
       --bg-input: #111319;
-      --bg-glass: rgba(13, 15, 19, 0.86);
+      --bg-glass: rgba(13, 15, 19, 0.88);
       --text-main: #f8fafc;
       --text-sub: #cbd5e1;
       --text-muted: #828ea3;
@@ -81,7 +85,7 @@
       --bg-surface: #0f1c38;
       --bg-elevated: #16274b;
       --bg-input: #0a142a;
-      --bg-glass: rgba(7, 15, 33, 0.86);
+      --bg-glass: rgba(7, 15, 33, 0.88);
       --text-main: #f0f9ff;
       --text-sub: #bae6fd;
       --text-muted: #6f8cb5;
@@ -106,7 +110,7 @@
       --bg-surface: #0e221b;
       --bg-elevated: #153127;
       --bg-input: #0a1914;
-      --bg-glass: rgba(7, 20, 16, 0.86);
+      --bg-glass: rgba(7, 20, 16, 0.88);
       --text-main: #ecfdf5;
       --text-sub: #a7f3d0;
       --text-muted: #66a68d;
@@ -131,7 +135,7 @@
       --bg-surface: #221a16;
       --bg-elevated: #2d231d;
       --bg-input: #1a1310;
-      --bg-glass: rgba(21, 16, 14, 0.86);
+      --bg-glass: rgba(21, 16, 14, 0.88);
       --text-main: #fff7ed;
       --text-sub: #fed7aa;
       --text-muted: #a68a78;
@@ -156,7 +160,7 @@
       --bg-surface: #150c26;
       --bg-elevated: #201338;
       --bg-input: #0f081c;
-      --bg-glass: rgba(11, 6, 20, 0.86);
+      --bg-glass: rgba(11, 6, 20, 0.88);
       --text-main: #faf5ff;
       --text-sub: #e9d5ff;
       --text-muted: #9b7ec7;
@@ -181,7 +185,7 @@
       --bg-surface: #f2f5f9;
       --bg-elevated: #e5ebf2;
       --bg-input: #ffffff;
-      --bg-glass: rgba(221, 227, 234, 0.86);
+      --bg-glass: rgba(221, 227, 234, 0.88);
       --text-main: #182230;
       --text-sub: #435368;
       --text-muted: #6e8096;
@@ -206,7 +210,7 @@
       --bg-surface: #ffffff;
       --bg-elevated: #fff6f8;
       --bg-input: #f9e8ec;
-      --bg-glass: rgba(253, 242, 244, 0.86);
+      --bg-glass: rgba(253, 242, 244, 0.88);
       --text-main: #3b1320;
       --text-sub: #7c3b50;
       --text-muted: #b07487;
@@ -255,10 +259,10 @@
 
     /* iOS Safe Area Helpers */
     .safe-top-header {
-      padding-top: calc(env(safe-area-inset-top, 16px) + 10px);
+      padding-top: calc(env(safe-area-inset-top, 14px) + 10px);
       padding-bottom: 10px;
-      padding-left: calc(env(safe-area-inset-left, 0px) + 16px);
-      padding-right: calc(env(safe-area-inset-right, 0px) + 16px);
+      padding-left: calc(env(safe-area-inset-left, 0px) + 14px);
+      padding-right: calc(env(safe-area-inset-right, 0px) + 14px);
       background: var(--bg-glass);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
@@ -276,7 +280,7 @@
       padding-bottom: calc(env(safe-area-inset-bottom, 14px) + 12px);
     }
 
-    /* Theme-Aware Surface Helpers */
+    /* Theme-Aware Surfaces */
     .surface-card {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -306,7 +310,7 @@
       box-shadow: 0 0 0 3px var(--accent-soft);
     }
 
-    /* Modal Backdrop & Sheet */
+    /* Modals */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -353,6 +357,15 @@
       }
     }
 
+    /* Live Pulse Animation */
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+    .sync-pulse {
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+
     /* Toast */
     #toast {
       position: fixed;
@@ -373,24 +386,35 @@
 <body class="w-full max-w-full overflow-x-hidden">
 
   <!-- =========================================================================
-       STICKY HEADER (LEFT: 44x44 MODEL LOGO + "STOCK RECORD" ONLY | RIGHT: MODEL PILL + SETTINGS)
+       STICKY HEADER
+       LEFT: 44x44 Model Logo + "STOCK RECORD" (no subtitle)
+       RIGHT: Live Sync Status + Active Model Pill + Settings Gear
        ========================================================================= -->
   <header class="sticky top-0 z-40 safe-top-header w-full max-w-full">
     <div class="max-w-lg mx-auto flex items-center justify-between gap-2 min-w-0">
-      <!-- Left: Model Image Box + Title ONLY (No subtitle) -->
+      <!-- Left: Model Logo + Title -->
       <div class="flex items-center gap-2.5 min-w-0">
         <button onclick="openModelsModal()" title="Switch or Edit Model" class="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center overflow-hidden p-1 transition active:scale-95" style="background: var(--bg-surface); border: 1px solid var(--border); box-shadow: var(--shadow);">
           <div id="headerModelLogo" class="w-full h-full flex items-center justify-center"></div>
         </button>
-        <h1 class="text-[17px] font-extrabold tracking-tight truncate leading-none" style="color: var(--text-main);">STOCK RECORD</h1>
+        <h1 class="text-[16px] sm:text-[17px] font-extrabold tracking-tight truncate leading-none" style="color: var(--text-main);">STOCK RECORD</h1>
       </div>
 
-      <!-- Right: Model Switcher Pill + Settings Gear -->
-      <div class="flex items-center gap-2 shrink-0">
-        <button onclick="openModelsModal()" class="h-10 px-3 rounded-xl flex items-center gap-1.5 text-xs font-extrabold transition active:scale-95" style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--border);">
-          <span id="headerModelCode" class="font-mono-num max-w-[76px] truncate">D01D</span>
+      <!-- Right: Live Sync Indicator + Model Pill + Settings -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Live Sync Status Pill -->
+        <div id="syncPill" class="h-8 px-2 rounded-full flex items-center gap-1.5 text-[10.5px] font-bold shrink-0" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);">
+          <span id="syncDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span id="syncText">Offline</span>
+        </div>
+
+        <!-- Model Switcher Pill -->
+        <button onclick="openModelsModal()" class="h-10 px-2.5 rounded-xl flex items-center gap-1 text-xs font-extrabold transition active:scale-95" style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--border);">
+          <span id="headerModelCode" class="font-mono-num max-w-[64px] truncate">D01D</span>
           <span class="text-[10px]">▾</span>
         </button>
+
+        <!-- Settings Gear -->
         <button onclick="openSettingsModal()" aria-label="Settings" class="w-10 h-10 rounded-xl flex items-center justify-center transition active:scale-95" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main); box-shadow: var(--shadow);">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"/>
@@ -406,7 +430,7 @@
        ========================================================================= -->
   <main class="max-w-lg mx-auto safe-main flex flex-col gap-5 w-full max-w-full overflow-x-hidden">
 
-    <!-- SECTION 1: ESTIMATED ASSY CAPACITY (HORIZONTAL SLIDING CAROUSEL) -->
+    <!-- SECTION 1: ESTIMATED ASSY CAPACITY (SLIDING CAROUSEL) -->
     <section class="w-full min-w-0">
       <div class="flex items-center justify-between px-1 mb-2.5">
         <h2 class="text-[13.5px] font-extrabold flex items-center gap-2">
@@ -531,10 +555,8 @@
       </div>
 
       <div class="p-4 overflow-y-auto overflow-x-hidden flex flex-col gap-4 w-full min-w-0">
-        <!-- Model List -->
         <div id="modelsList" class="flex flex-col gap-2.5 w-full min-w-0"></div>
 
-        <!-- Add / Edit Model Form -->
         <div class="elevated-box rounded-2xl p-3.5 flex flex-col gap-3 w-full min-w-0">
           <div class="flex items-center justify-between">
             <span id="modelFormHeading" class="text-xs font-extrabold uppercase tracking-wide" style="color: var(--accent);">Add New Model</span>
@@ -570,12 +592,15 @@
   <div id="categoryModal" class="modal-backdrop" onclick="backdropClose(event, 'categoryModal')">
     <div class="modal-sheet">
       <div class="w-10 h-1 rounded-full mx-auto mt-2.5 mb-1 shrink-0" style="background: var(--border);"></div>
-      <div class="px-4 py-3 flex items-center justify-between shrink-0" style="border-bottom: 1px solid var(--border);">
+      <div class="px-4 py-3 flex items-center justify-between gap-2 shrink-0" style="border-bottom: 1px solid var(--border);">
         <div class="min-w-0">
           <h3 id="catModalTitle" class="text-base font-extrabold truncate">Category</h3>
           <div id="catModalSub" class="text-[11px] font-semibold" style="color: var(--text-muted);"></div>
         </div>
-        <button onclick="closeModal('categoryModal')" class="w-8 h-8 rounded-xl elevated-box flex items-center justify-center text-sm font-bold shrink-0">✕</button>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="catBulkBtn" onclick="openBulkIndicatorModal(state.activeCategory)" class="hidden px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold transition active:scale-95" style="background: var(--accent-soft); color: var(--accent);" data-i18n="btnBulkIndicator">Bulk Indicator</button>
+          <button onclick="closeModal('categoryModal')" class="w-8 h-8 rounded-xl elevated-box flex items-center justify-center text-sm font-bold shrink-0">✕</button>
+        </div>
       </div>
 
       <div class="p-4 overflow-y-auto overflow-x-hidden flex flex-col gap-3 w-full min-w-0">
@@ -591,7 +616,71 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 3: ASSY DETAIL SHEET
+       MODAL 3: BULK INDICATOR SETTING (LOOSE & ASSY, SKIPS COMMON PARTS)
+       ========================================================================= -->
+  <div id="bulkIndicatorModal" class="modal-backdrop" onclick="backdropClose(event, 'bulkIndicatorModal')">
+    <div class="modal-sheet">
+      <div class="w-10 h-1 rounded-full mx-auto mt-2.5 mb-1 shrink-0" style="background: var(--border);"></div>
+      <div class="px-4 py-3 flex items-center justify-between shrink-0" style="border-bottom: 1px solid var(--border);">
+        <h3 class="text-base font-extrabold" data-i18n="bulkTitle">Bulk Indicator Setting</h3>
+        <button onclick="closeModal('bulkIndicatorModal')" class="w-8 h-8 rounded-xl elevated-box flex items-center justify-center text-sm font-bold">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto overflow-x-hidden flex flex-col gap-4 w-full min-w-0">
+        <!-- Info Banner -->
+        <div class="rounded-2xl p-3 text-[11.5px] leading-relaxed font-medium" style="background: var(--accent-soft); color: var(--accent); border: 1px solid var(--border);" data-i18n="bulkInfoNote">
+          Set LOW &amp; MID thresholds once for all parts in the category. Parts marked as COMMON (L/R) — such as 61415 — are automatically skipped to keep their custom limits.
+        </div>
+
+        <!-- Loose Part Bulk Box -->
+        <div id="bulkLooseBox" class="elevated-box rounded-2xl p-3.5 flex flex-col gap-3 w-full min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs font-extrabold" data-i18n="bulkLooseTitle">Loose Part (L/P — In-House)</div>
+            <span id="bulkLooseCount" class="text-[10.5px] font-bold px-2 py-0.5 rounded-full font-mono-num" style="background: var(--bg-surface); color: var(--text-muted);"></span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5 w-full min-w-0">
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold mb-1" style="color: var(--red-fg);" data-i18n="lblLowLim">LOW ≤</label>
+              <input id="bulkLooseLow" type="number" min="0" value="61" class="field-input font-mono-num text-xs" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold mb-1" style="color: var(--amber-fg);" data-i18n="lblMidLim">MID ≤</label>
+              <input id="bulkLooseMid" type="number" min="0" value="62" class="field-input font-mono-num text-xs" />
+            </div>
+          </div>
+          <button onclick="applyBulkThresholds('loose')" class="w-full py-2.5 rounded-xl text-xs font-extrabold transition active:scale-95" style="background: var(--accent); color: var(--accent-fg);" data-i18n="btnApplyLoose">
+            Apply to All Loose Parts (Skip Common)
+          </button>
+        </div>
+
+        <!-- Assy Part Bulk Box -->
+        <div id="bulkAssyBox" class="elevated-box rounded-2xl p-3.5 flex flex-col gap-3 w-full min-w-0">
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs font-extrabold" data-i18n="bulkAssyTitle">Assy Part (A — In-House)</div>
+            <span id="bulkAssyCount" class="text-[10.5px] font-bold px-2 py-0.5 rounded-full font-mono-num" style="background: var(--bg-surface); color: var(--text-muted);"></span>
+          </div>
+          <div class="grid grid-cols-2 gap-2.5 w-full min-w-0">
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold mb-1" style="color: var(--red-fg);" data-i18n="lblLowLim">LOW ≤</label>
+              <input id="bulkAssyLow" type="number" min="0" value="61" class="field-input font-mono-num text-xs" />
+            </div>
+            <div class="min-w-0">
+              <label class="block text-[11px] font-bold mb-1" style="color: var(--amber-fg);" data-i18n="lblMidLim">MID ≤</label>
+              <input id="bulkAssyMid" type="number" min="0" value="62" class="field-input font-mono-num text-xs" />
+            </div>
+          </div>
+          <button onclick="applyBulkThresholds('assy')" class="w-full py-2.5 rounded-xl text-xs font-extrabold transition active:scale-95" style="background: var(--accent); color: var(--accent-fg);" data-i18n="btnApplyAssy">
+            Apply to All Assy Parts (Skip Common)
+          </button>
+        </div>
+
+        <div id="bulkResultNote" class="hidden rounded-xl p-3 text-xs font-bold" style="background: var(--green-bg); color: var(--green-fg); border: 1px solid var(--green-border);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 4: ASSY DETAIL SHEET
        ========================================================================= -->
   <div id="assyDetailModal" class="modal-backdrop" onclick="backdropClose(event, 'assyDetailModal')">
     <div class="modal-sheet">
@@ -605,7 +694,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 4: FAST RECORD STOCK (IN / PRODUCE ASSY / OUT / NG)
+       MODAL 5: FAST RECORD STOCK (IN / PRODUCE ASSY / OUT / NG)
        ========================================================================= -->
   <div id="fastRecordModal" class="modal-backdrop" onclick="backdropClose(event, 'fastRecordModal')">
     <div class="modal-sheet">
@@ -619,10 +708,8 @@
       </div>
 
       <div class="p-4 overflow-y-auto overflow-x-hidden flex flex-col gap-3.5 w-full min-w-0">
-        <!-- Action Tabs -->
         <div id="fastActionTabs" class="grid gap-1.5 w-full"></div>
 
-        <!-- Part Selector -->
         <div class="w-full min-w-0">
           <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="lblSelectPart">Select Part</label>
           <input id="fastPartFilter" type="text" class="field-input mb-2 text-xs py-2" oninput="populateFastPartSelect()" data-i18n-placeholder="filterPartPh" placeholder="Filter part no / name..." />
@@ -630,7 +717,6 @@
           <div id="fastStockMeta" class="text-[11px] font-bold mt-1.5" style="color: var(--text-muted);"></div>
         </div>
 
-        <!-- Quantity + Quick Chips -->
         <div class="w-full min-w-0">
           <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="lblQuantity">Quantity *</label>
           <input id="fastQtyInput" type="number" min="1" value="1" class="field-input font-mono-num text-lg font-extrabold" oninput="updateFastRecordPreview()" />
@@ -643,7 +729,6 @@
           </div>
         </div>
 
-        <!-- BOM Auto-Deduction Preview -->
         <div id="fastBomPreviewWrap" class="hidden elevated-box rounded-2xl p-3 w-full min-w-0">
           <div class="flex items-center justify-between mb-2">
             <span class="text-[11px] font-extrabold uppercase" style="color: var(--text-sub);" data-i18n="bomPreviewTitle">BOM Auto-Deduction</span>
@@ -653,13 +738,11 @@
           <div id="fastBomWarn" class="hidden mt-2 p-2 rounded-xl text-[11px] font-bold" style="background: var(--red-bg); color: var(--red-fg); border: 1px solid var(--red-border);"></div>
         </div>
 
-        <!-- Date & Time -->
         <div class="w-full min-w-0">
           <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="lblDateTime">Date &amp; Time</label>
           <input id="fastDateTime" type="datetime-local" class="field-input font-mono-num text-xs" />
         </div>
 
-        <!-- Notes -->
         <div class="w-full min-w-0">
           <label id="fastNoteLabel" class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="lblNoteOpt">Notes / Remark (Optional)</label>
           <input id="fastNoteInput" type="text" class="field-input text-xs" placeholder="e.g. DO #1024 / Shift A / Scratch" />
@@ -674,7 +757,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 5: ADD / EDIT PART (ZERO OVERFLOW, OBJECT-CONTAIN IMAGE, CLEAN GRID)
+       MODAL 6: ADD / EDIT PART (INCLUDES COMMON PART / EXCLUDE FROM BULK TOGGLE)
        ========================================================================= -->
   <div id="partEditorModal" class="modal-backdrop" onclick="backdropClose(event, 'partEditorModal')">
     <div class="modal-sheet">
@@ -687,7 +770,6 @@
       <div class="p-4 overflow-y-auto overflow-x-hidden flex flex-col gap-3.5 w-full min-w-0">
         <input type="hidden" id="editPartId" />
 
-        <!-- Clean 3-Column Category Tabs -->
         <div class="w-full min-w-0">
           <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="lblCategory">Category</label>
           <div class="grid grid-cols-3 gap-1.5 w-full">
@@ -697,7 +779,6 @@
           </div>
         </div>
 
-        <!-- Photo Upload with object-contain frame -->
         <div class="flex items-center gap-3 w-full min-w-0">
           <div id="epPhotoBox" class="w-20 h-20 rounded-2xl shrink-0 flex items-center justify-center overflow-hidden p-1.5" style="background: var(--bg-elevated); border: 1px solid var(--border);"></div>
           <div class="flex-1 min-w-0 flex flex-col gap-2">
@@ -712,7 +793,6 @@
           </div>
         </div>
 
-        <!-- Part No & Part Name (Stacked cleanly or responsive 2-col with min-w-0) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
           <div class="min-w-0">
             <label class="block text-[11px] font-bold mb-1" style="color: var(--text-sub);" data-i18n="lblPartNo">Part No. *</label>
@@ -724,13 +804,11 @@
           </div>
         </div>
 
-        <!-- Vendor (Child Part only) -->
         <div id="epVendorWrap" class="w-full min-w-0">
           <label class="block text-[11px] font-bold mb-1" style="color: var(--text-sub);" data-i18n="lblVendor">Vendor Name *</label>
           <input id="epVendor" type="text" class="field-input text-xs" placeholder="e.g. 2nd Tier Vendor" />
         </div>
 
-        <!-- Stock & Thresholds (3-col with min-w-0) -->
         <div class="grid grid-cols-3 gap-2 w-full min-w-0">
           <div class="min-w-0">
             <label class="block text-[11px] font-bold mb-1 truncate" style="color: var(--text-sub);" data-i18n="lblStockQty">Stock Qty</label>
@@ -745,6 +823,15 @@
             <input id="epMid" type="number" min="0" value="50" class="field-input font-mono-num text-xs px-2.5" />
           </div>
         </div>
+
+        <!-- Common Part / Exclude from Bulk Toggle -->
+        <label class="elevated-box rounded-xl p-3 flex items-center justify-between gap-3 cursor-pointer w-full min-w-0">
+          <div class="min-w-0">
+            <div class="text-xs font-extrabold" data-i18n="lblCommonPart">Exclude from Bulk / Common Part (L/R)</div>
+            <div class="text-[10.5px] font-medium" style="color: var(--text-muted);" data-i18n="lblCommonSub">Keeps its own custom LOW/MID limits during Bulk updates.</div>
+          </div>
+          <input id="epIsCommon" type="checkbox" class="w-5 h-5 shrink-0 accent-blue-600 rounded cursor-pointer" />
+        </label>
 
         <!-- BOM Builder (Assy Part only) -->
         <div id="epBomWrap" class="hidden elevated-box rounded-2xl p-3 flex flex-col gap-2.5 w-full min-w-0">
@@ -761,7 +848,6 @@
         </div>
       </div>
 
-      <!-- Bottom Action Buttons (Fits cleanly on 360px screens) -->
       <div class="px-4 pt-3 safe-sheet-foot flex items-center justify-between gap-2 shrink-0 w-full" style="border-top: 1px solid var(--border); background: var(--bg-surface);">
         <button id="epDeleteBtn" onclick="deleteEditingPart()" class="hidden px-3 py-2.5 rounded-xl text-xs font-bold shrink-0" style="background: var(--red-bg); color: var(--red-fg); border: 1px solid var(--red-border);" data-i18n="btnDelete">Delete</button>
         <div class="flex items-center gap-2 ml-auto shrink-0">
@@ -773,7 +859,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 6: FULL HISTORY MODAL
+       MODAL 7: FULL HISTORY MODAL
        ========================================================================= -->
   <div id="historyModal" class="modal-backdrop" onclick="backdropClose(event, 'historyModal')">
     <div class="modal-sheet">
@@ -797,7 +883,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 7: ADD / EDIT EVENT MODAL
+       MODAL 8: ADD / EDIT EVENT MODAL
        ========================================================================= -->
   <div id="eventModal" class="modal-backdrop" onclick="backdropClose(event, 'eventModal')">
     <div class="modal-sheet">
@@ -832,7 +918,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 8: SETTINGS (EN/BM, 8 THEMES, MODELS, ADD PART, EXCEL, JSON)
+       MODAL 9: SETTINGS
        ========================================================================= -->
   <div id="settingsModal" class="modal-backdrop" onclick="backdropClose(event, 'settingsModal')">
     <div class="modal-sheet">
@@ -852,7 +938,7 @@
           </div>
         </div>
 
-        <!-- 8 Premium Themes -->
+        <!-- 8 Themes -->
         <div>
           <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="setThemes">Themes (8)</label>
           <div id="themeSwatchGrid" class="grid grid-cols-2 gap-2"></div>
@@ -860,6 +946,10 @@
 
         <!-- Actions -->
         <div class="flex flex-col gap-2">
+          <button onclick="closeModal('settingsModal'); openBulkIndicatorModal();" class="w-full py-2.5 px-4 rounded-xl elevated-box text-xs font-extrabold flex items-center justify-center gap-2" style="color: var(--accent);">
+            <span data-i18n="btnBulkSetting">Bulk Indicator (Loose &amp; Assy)</span>
+          </button>
+
           <button onclick="closeModal('settingsModal'); openModelsModal();" class="w-full py-2.5 px-4 rounded-xl elevated-box text-xs font-extrabold flex items-center justify-center gap-2">
             <span data-i18n="btnManageModels">Manage Models (Switch / Add)</span>
           </button>
@@ -873,9 +963,9 @@
           </button>
         </div>
 
-        <!-- Full Backup / Restore JSON -->
+        <!-- Backup / Restore JSON -->
         <div>
-          <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="setBackup">Full Backup / Restore (All Models)</label>
+          <label class="block text-[11px] font-bold mb-1.5" style="color: var(--text-sub);" data-i18n="setBackup">Backup / Restore JSON (Auto-Syncs to Cloud)</label>
           <div class="grid grid-cols-2 gap-2">
             <button onclick="exportBackupJSON()" class="py-2.5 rounded-xl elevated-box text-xs font-bold" data-i18n="btnBackupJson">Backup JSON</button>
             <label class="py-2.5 rounded-xl elevated-box text-xs font-bold text-center cursor-pointer">
@@ -886,14 +976,14 @@
         </div>
 
         <div class="text-center text-[11px] font-medium pt-1" style="color: var(--text-muted);">
-          STOCK RECORD v4.0 • Multi-Model Offline PWA
+          STOCK RECORD v5.0 • Firebase Live Sync PWA
         </div>
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       LIGHTBOX & CUSTOM CONFIRM DIALOG (NO alert/confirm)
+       LIGHTBOX & CUSTOM CONFIRM DIALOG
        ========================================================================= -->
   <div id="photoLightbox" class="modal-backdrop items-center p-4" onclick="closeModal('photoLightbox')">
     <div class="w-full max-w-md flex flex-col gap-3" onclick="event.stopPropagation()">
@@ -925,10 +1015,18 @@
   <div id="toast" class="px-4 py-2.5 rounded-full text-xs font-bold text-white shadow-xl max-w-[90vw] truncate"></div>
 
   <!-- =========================================================================
-       APPLICATION LOGIC
+       APPLICATION LOGIC (FIREBASE LIVE SYNC + BULK INDICATOR + MULTI-MODEL)
        ========================================================================= -->
   <script>
-    const STORAGE_KEY = "stock_record_v4_models";
+    const CACHE_KEY = "stock_record_v5_cache";
+    const FIREBASE_DB_URL = "https://stock-record-3c172-default-rtdb.asia-southeast1.firebasedatabase.app";
+    const FIREBASE_DATA_PATH = "stock_record_v5/data";
+    const CLIENT_ID = "cli_" + Math.random().toString(36).slice(2, 10);
+
+    let fbDb = null;
+    let fbDataRef = null;
+    let isFirebaseConnected = false;
+    let lastLocalPushTs = 0;
 
     const THEMES = [
       { id: "light",    name: "Clean Light",     bg: "#eef2f6", card: "#ffffff", accent: "#2563eb", dark: false },
@@ -943,6 +1041,7 @@
 
     /* -------------------------------------------------------------------------
        PRE-LOADED 38 PARTS & EVENTS FOR DEFAULT MODEL: D01D
+       61415 BZ-050 pre-marked isCommon: true
        ------------------------------------------------------------------------- */
     function getDefaultD01DParts() {
       const loose = [
@@ -993,15 +1092,21 @@
       const list = [];
       loose.forEach(([partNo, name], i) => list.push({
         id: `lp_${i + 1}`, type: "loose", partNo, name, vendor: "",
-        qty: 0, lowThreshold: 20, midThreshold: 50, photo: "", bom: []
+        qty: 0, lowThreshold: 20, midThreshold: 50,
+        isCommon: partNo.includes("61415"),
+        photo: "", bom: []
       }));
       child.forEach(([partNo, name], i) => list.push({
         id: `cp_${i + 1}`, type: "child", partNo, name, vendor: "2nd Tier Vendor",
-        qty: 0, lowThreshold: 20, midThreshold: 50, photo: "", bom: []
+        qty: 0, lowThreshold: 20, midThreshold: 50,
+        isCommon: false,
+        photo: "", bom: []
       }));
       assy.forEach(([partNo, name], i) => list.push({
         id: `as_${i + 1}`, type: "assy", partNo, name, vendor: "",
-        qty: 0, lowThreshold: 20, midThreshold: 50, photo: "", bom: []
+        qty: 0, lowThreshold: 20, midThreshold: 50,
+        isCommon: false,
+        photo: "", bom: []
       }));
       return list;
     }
@@ -1019,6 +1124,43 @@
           { id: "ev_d2", date: `${yr}-11-12`, title: "PP", note: "Production Pilot" }
         ]
       };
+    }
+
+    /* -------------------------------------------------------------------------
+       NORMALIZER (Handles Firebase stripping empty arrays & v4.0 JSON imports)
+       ------------------------------------------------------------------------- */
+    function toArray(val) {
+      if (Array.isArray(val)) return val;
+      if (val && typeof val === "object") return Object.values(val);
+      return [];
+    }
+
+    function normalizeModels(rawModels) {
+      const arr = toArray(rawModels);
+      if (!arr.length) return [createDefaultD01DModel()];
+      return arr.map(m => ({
+        id: m.id || "model_" + Date.now(),
+        name: m.name || "MODEL",
+        image: m.image || "",
+        parts: toArray(m.parts).map(p => ({
+          id: p.id || "p_" + Date.now() + Math.random(),
+          type: p.type || "loose",
+          partNo: p.partNo || "",
+          name: p.name || "",
+          vendor: p.vendor || "",
+          qty: Number(p.qty) || 0,
+          lowThreshold: Number(p.lowThreshold ?? 20),
+          midThreshold: Number(p.midThreshold ?? 50),
+          isCommon: typeof p.isCommon === "boolean" ? p.isCommon : String(p.partNo || "").includes("61415"),
+          photo: p.photo || "",
+          bom: toArray(p.bom).map(b => ({
+            partId: b.partId,
+            reqQty: Number(b.reqQty) || 1
+          }))
+        })),
+        logs: toArray(m.logs),
+        events: toArray(m.events)
+      }));
     }
 
     /* -------------------------------------------------------------------------
@@ -1063,6 +1205,8 @@
         lblStockQty: "Stock Qty",
         lblLowLim: "LOW ≤",
         lblMidLim: "MID ≤",
+        lblCommonPart: "Exclude from Bulk / Common Part (L/R)",
+        lblCommonSub: "Keeps its own custom LOW/MID limits during Bulk updates.",
         bomBuilderTitle: "Assy Recipe (BOM)",
         bomBuilderSub: "Select Loose & Child parts needed for 1 unit Assy.",
         btnDelete: "Delete",
@@ -1074,10 +1218,18 @@
         settingsTitle: "Settings",
         setLang: "Language / Bahasa",
         setThemes: "Themes (8)",
+        btnBulkIndicator: "Bulk Indicator",
+        btnBulkSetting: "Bulk Indicator (Loose & Assy)",
+        bulkTitle: "Bulk Indicator Setting",
+        bulkInfoNote: "Set LOW & MID thresholds once for all parts in the category. Parts marked as COMMON (L/R) — such as 61415 — are automatically skipped to keep their custom limits.",
+        bulkLooseTitle: "Loose Part (L/P — In-House)",
+        bulkAssyTitle: "Assy Part (A — In-House)",
+        btnApplyLoose: "Apply to All Loose Parts (Skip Common)",
+        btnApplyAssy: "Apply to All Assy Parts (Skip Common)",
         btnManageModels: "Manage Models (Switch / Add)",
         btnAddNewPart: "Add New Part (A / L/P / C/P)",
         btnExportExcel: "Export Current Model to Excel (.xlsx)",
-        setBackup: "Full Backup / Restore (All Models)",
+        setBackup: "Backup / Restore JSON (Auto-Syncs to Cloud)",
         btnBackupJson: "Backup JSON",
         btnRestoreJson: "Restore JSON",
         estLabel: "Est",
@@ -1094,11 +1246,11 @@
         bomNotSet: "BOM recipe not configured yet.",
         shortageWarn: "Insufficient component stock for this quantity!",
         outShortage: "Insufficient stock for OUT / NG!",
-        savedMsg: "Saved!",
+        savedMsg: "Saved & synced!",
         deletedMsg: "Deleted.",
         excelDone: "Excel (.xlsx) downloaded!",
         backupDone: "Full JSON backup downloaded!",
-        restoreDone: "All models restored!",
+        restoreDone: "Restored & synced to Cloud!",
         invalidFile: "Invalid JSON backup file."
       },
       bm: {
@@ -1139,6 +1291,8 @@
         lblStockQty: "Stok Semasa",
         lblLowLim: "Had LOW ≤",
         lblMidLim: "Had MID ≤",
+        lblCommonPart: "Kecualikan Bulk / Common Part (L/R)",
+        lblCommonSub: "Kekalkan had LOW/MID khas semasa kemas kini Bulk.",
         bomBuilderTitle: "Resepi Assy (BOM)",
         bomBuilderSub: "Pilih Loose & Child part untuk 1 unit Assy.",
         btnDelete: "Padam",
@@ -1150,10 +1304,18 @@
         settingsTitle: "Tetapan",
         setLang: "Bahasa / Language",
         setThemes: "Tema Paparan (8)",
+        btnBulkIndicator: "Indikator Bulk",
+        btnBulkSetting: "Indikator Bulk (Loose & Assy)",
+        bulkTitle: "Tetapan Indikator Bulk",
+        bulkInfoNote: "Tetapkan had LOW & MID sekali gus untuk semua part. Part bertanda COMMON (L/R) — seperti 61415 — dikecualikan secara automatik supaya had khasnya kekal.",
+        bulkLooseTitle: "Loose Part (L/P — In-House)",
+        bulkAssyTitle: "Assy Part (A — In-House)",
+        btnApplyLoose: "Guna untuk Semua Loose (Kecuali Common)",
+        btnApplyAssy: "Guna untuk Semua Assy (Kecuali Common)",
         btnManageModels: "Urus Model (Tukar / Tambah)",
         btnAddNewPart: "Tambah Part Baru (A / L/P / C/P)",
         btnExportExcel: "Eksport Model Semasa ke Excel (.xlsx)",
-        setBackup: "Sandaran & Pulih (Semua Model)",
+        setBackup: "Sandaran & Pulih JSON (Auto-Sync ke Cloud)",
         btnBackupJson: "Sandaran JSON",
         btnRestoreJson: "Pulih JSON",
         estLabel: "Ang",
@@ -1170,17 +1332,17 @@
         bomNotSet: "Resepi BOM belum ditetapkan.",
         shortageWarn: "Stok komponen tidak mencukupi!",
         outShortage: "Stok tidak mencukupi untuk OUT / NG!",
-        savedMsg: "Berjaya disimpan!",
+        savedMsg: "Disimpan & disegerakkan!",
         deletedMsg: "Telah dipadam.",
         excelDone: "Excel (.xlsx) dimuat turun!",
         backupDone: "Sandaran penuh JSON dimuat turun!",
-        restoreDone: "Semua model berjaya dipulihkan!",
+        restoreDone: "Dipulihkan & disegerakkan ke Cloud!",
         invalidFile: "Fail sandaran JSON tidak sah."
       }
     };
 
     /* -------------------------------------------------------------------------
-       APP STATE & STORAGE
+       APP STATE & INITIALIZATION
        ------------------------------------------------------------------------- */
     const todayNow = new Date();
     let state = {
@@ -1188,7 +1350,6 @@
       activeModelId: "",
       theme: "light",
       lang: "en",
-      // Transient UI state
       activeCategory: "assy",
       histFilter: "ALL",
       calYear: todayNow.getFullYear(),
@@ -1211,17 +1372,33 @@
       return m;
     }
 
-    function initApp() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        const d01d = createDefaultD01DModel();
-        state.models = [d01d];
-        state.activeModelId = d01d.id;
-        persist();
+    function setSyncBadge(mode) {
+      const dot = document.getElementById("syncDot");
+      const txt = document.getElementById("syncText");
+      if (!dot || !txt) return;
+      dot.classList.remove("sync-pulse", "bg-emerald-500", "bg-amber-500", "bg-slate-400");
+      if (mode === "live") {
+        dot.classList.add("bg-emerald-500", "sync-pulse");
+        txt.textContent = "Live";
+        txt.style.color = "var(--green-fg)";
+      } else if (mode === "syncing") {
+        dot.classList.add("bg-amber-500", "sync-pulse");
+        txt.textContent = "Syncing...";
+        txt.style.color = "var(--amber-fg)";
       } else {
+        dot.classList.add("bg-slate-400");
+        txt.textContent = "Offline";
+        txt.style.color = "var(--text-muted)";
+      }
+    }
+
+    function initApp() {
+      // 1. Instant load from localStorage cache
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
         try {
           const parsed = JSON.parse(raw);
-          state.models = Array.isArray(parsed.models) && parsed.models.length ? parsed.models : [createDefaultD01DModel()];
+          state.models = normalizeModels(parsed.models);
           state.activeModelId = parsed.activeModelId || state.models[0].id;
           state.theme = parsed.theme || "light";
           state.lang = parsed.lang || "en";
@@ -1230,24 +1407,102 @@
           state.models = [d01d];
           state.activeModelId = d01d.id;
         }
+      } else {
+        const d01d = createDefaultD01DModel();
+        state.models = [d01d];
+        state.activeModelId = d01d.id;
+        saveLocalCache();
       }
 
       applyTheme(state.theme, false);
       applyLanguage();
       renderAll();
+
+      // 2. Connect to Firebase Realtime Database
+      initFirebaseSync();
     }
 
-    function persist() {
+    function initFirebaseSync() {
+      if (typeof firebase === "undefined") {
+        setSyncBadge("offline");
+        return;
+      }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        if (!firebase.apps.length) {
+          firebase.initializeApp({ databaseURL: FIREBASE_DB_URL });
+        }
+        fbDb = firebase.database();
+        fbDataRef = fbDb.ref(FIREBASE_DATA_PATH);
+
+        // Monitor connection state
+        fbDb.ref(".info/connected").on("value", snap => {
+          isFirebaseConnected = snap.val() === true;
+          setSyncBadge(isFirebaseConnected ? "live" : "offline");
+        });
+
+        // Live listener on cloud data
+        fbDataRef.on("value", snap => {
+          const val = snap.val();
+          if (!val || !val.models) {
+            // Cloud is empty on first load -> push default D01D data
+            pushToFirebase();
+            return;
+          }
+          // Ignore echo of our own just-pushed write
+          if (val.clientId === CLIENT_ID && val.updatedAt === lastLocalPushTs) {
+            return;
+          }
+          state.models = normalizeModels(val.models);
+          if (!state.models.some(m => m.id === state.activeModelId)) {
+            state.activeModelId = val.activeModelId || state.models[0].id;
+          }
+          saveLocalCache();
+          renderAll();
+        }, err => {
+          console.error("Firebase read error:", err);
+          setSyncBadge("offline");
+        });
+      } catch (e) {
+        console.error("Firebase init error:", e);
+        setSyncBadge("offline");
+      }
+    }
+
+    function saveLocalCache() {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
           models: state.models,
           activeModelId: state.activeModelId,
           theme: state.theme,
           lang: state.lang
         }));
       } catch (e) {
-        showToast("Storage full! Try removing unused photos.", "error");
+        console.warn("Local cache warning:", e);
       }
+    }
+
+    function pushToFirebase() {
+      if (!fbDataRef) return;
+      const nowTs = Date.now();
+      lastLocalPushTs = nowTs;
+      setSyncBadge("syncing");
+      fbDataRef.set({
+        version: "5.0",
+        updatedAt: nowTs,
+        clientId: CLIENT_ID,
+        activeModelId: state.activeModelId,
+        models: state.models
+      }).then(() => {
+        setSyncBadge(isFirebaseConnected ? "live" : "offline");
+      }).catch(err => {
+        console.error("Firebase write error:", err);
+        setSyncBadge("offline");
+      });
+    }
+
+    function persist(syncCloud = true) {
+      saveLocalCache();
+      if (syncCloud) pushToFirebase();
     }
 
     /* -------------------------------------------------------------------------
@@ -1333,7 +1588,7 @@
           canvas.width = w;
           canvas.height = h;
           canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          callback(canvas.toDataURL("image/jpeg", 0.75));
+          callback(canvas.toDataURL("image/jpeg", 0.72));
         };
         img.src = e.target.result;
       };
@@ -1341,20 +1596,20 @@
     }
 
     /* -------------------------------------------------------------------------
-       THEME & LANGUAGE
+       THEME & LANGUAGE (Local Preferences Only)
        ------------------------------------------------------------------------- */
     function applyTheme(id, save = true) {
       state.theme = id;
       document.documentElement.setAttribute("data-theme", id);
       const th = THEMES.find(x => x.id === id);
       if (th) document.getElementById("metaThemeColor").setAttribute("content", th.bg);
-      if (save) persist();
+      if (save) persist(false);
       renderThemeSwatches();
     }
 
     function setLanguage(lang) {
       state.lang = lang;
-      persist();
+      persist(false);
       applyLanguage();
       renderAll();
     }
@@ -1429,6 +1684,75 @@
     }
 
     /* -------------------------------------------------------------------------
+       BULK INDICATOR SETTING (LOOSE & ASSY, SKIPS COMMON PARTS)
+       ------------------------------------------------------------------------- */
+    function openBulkIndicatorModal(focusCat = null) {
+      const m = getActiveModel();
+      const looseAll = m.parts.filter(p => p.type === "loose");
+      const looseNonCommon = looseAll.filter(p => !p.isCommon);
+      const looseCommon = looseAll.length - looseNonCommon.length;
+
+      const assyAll = m.parts.filter(p => p.type === "assy");
+      const assyNonCommon = assyAll.filter(p => !p.isCommon);
+      const assyCommon = assyAll.length - assyNonCommon.length;
+
+      document.getElementById("bulkLooseCount").textContent = `${looseNonCommon.length} parts (${looseCommon} common)`;
+      document.getElementById("bulkAssyCount").textContent = `${assyNonCommon.length} parts (${assyCommon} common)`;
+
+      if (looseNonCommon.length) {
+        document.getElementById("bulkLooseLow").value = looseNonCommon[0].lowThreshold;
+        document.getElementById("bulkLooseMid").value = looseNonCommon[0].midThreshold;
+      }
+      if (assyNonCommon.length) {
+        document.getElementById("bulkAssyLow").value = assyNonCommon[0].lowThreshold;
+        document.getElementById("bulkAssyMid").value = assyNonCommon[0].midThreshold;
+      }
+
+      const resBox = document.getElementById("bulkResultNote");
+      resBox.classList.add("hidden");
+      resBox.textContent = "";
+
+      openModal("bulkIndicatorModal");
+    }
+
+    function applyBulkThresholds(cat) {
+      const m = getActiveModel();
+      const lowInp = document.getElementById(cat === "loose" ? "bulkLooseLow" : "bulkAssyLow");
+      const midInp = document.getElementById(cat === "loose" ? "bulkLooseMid" : "bulkAssyMid");
+      const lowVal = Math.max(0, parseInt(lowInp.value, 10) || 0);
+      const midVal = Math.max(lowVal, parseInt(midInp.value, 10) || 0);
+      midInp.value = midVal;
+
+      let updated = 0;
+      const skippedNames = [];
+
+      m.parts.forEach(p => {
+        if (p.type !== cat) return;
+        if (p.isCommon) {
+          skippedNames.push(p.partNo);
+          return;
+        }
+        p.lowThreshold = lowVal;
+        p.midThreshold = midVal;
+        updated++;
+      });
+
+      persist(true);
+      renderAll();
+
+      const catLbl = cat === "loose" ? "Loose (L/P)" : "Assy (A)";
+      let msg = `Updated ${updated} ${catLbl} parts (LOW ≤ ${lowVal}, MID ≤ ${midVal}).`;
+      if (skippedNames.length) {
+        msg += ` Skipped ${skippedNames.length} Common part(s): ${skippedNames.join(", ")}.`;
+      }
+
+      const resBox = document.getElementById("bulkResultNote");
+      resBox.textContent = msg;
+      resBox.classList.remove("hidden");
+      showToast(t("savedMsg"), "success");
+    }
+
+    /* -------------------------------------------------------------------------
        MODELS MANAGER MODAL
        ------------------------------------------------------------------------- */
     function openModelsModal() {
@@ -1470,11 +1794,10 @@
 
     function switchModel(modelId) {
       state.activeModelId = modelId;
-      persist();
+      persist(false);
       closeModal("modelsModal");
       renderAll();
-      const m = getActiveModel();
-      showToast(`Switched to ${m.name}`, "info");
+      showToast(`Switched to ${getActiveModel().name}`, "info");
     }
 
     function startEditModel(modelId) {
@@ -1534,24 +1857,14 @@
 
       if (id) {
         const m = state.models.find(x => x.id === id);
-        if (m) {
-          m.name = name;
-          m.image = state.mfPhoto;
-        }
+        if (m) { m.name = name; m.image = state.mfPhoto; }
       } else {
-        const newModel = {
-          id: "model_" + Date.now(),
-          name,
-          image: state.mfPhoto,
-          parts: [],
-          logs: [],
-          events: []
-        };
+        const newModel = { id: "model_" + Date.now(), name, image: state.mfPhoto, parts: [], logs: [], events: [] };
         state.models.push(newModel);
         state.activeModelId = newModel.id;
       }
 
-      persist();
+      persist(true);
       resetModelForm();
       renderAll();
       showToast(t("savedMsg"), "success");
@@ -1563,14 +1876,14 @@
       openConfirm(`Delete Model ${m.name}?`, "All parts, history logs, and events inside this model will be permanently removed.", () => {
         state.models = state.models.filter(x => x.id !== modelId);
         if (state.activeModelId === modelId) state.activeModelId = state.models[0].id;
-        persist();
+        persist(true);
         renderAll();
         showToast(t("deletedMsg"), "info");
       });
     }
 
     /* -------------------------------------------------------------------------
-       SECTION 1: ESTIMATED ASSY CAROUSEL (object-contain)
+       SECTION 1: ESTIMATED ASSY CAROUSEL
        ------------------------------------------------------------------------- */
     function renderAssyCarousel() {
       const m = getActiveModel();
@@ -1604,12 +1917,13 @@
               ${pic}
               <span class="absolute right-2 bottom-2 px-2 py-1 rounded-lg text-[11px] font-extrabold text-white font-mono-num shadow" style="background:${badgeBg};">${badgeTxt}</span>
             </div>
-            <div class="p-2.5 flex-1 flex flex-col justify-between gap-1.5">
+            <div class="p-2.5 flex-1 flex flex-col justify-between gap-1">
               <div class="text-[11.5px] font-bold leading-snug line-clamp-2 min-h-[30px]">${esc(p.name)}</div>
               <div class="flex items-center justify-between gap-1">
                 <span class="font-mono-num text-[9.5px] font-bold px-1.5 py-0.5 rounded-md truncate max-w-[100px]" style="background: var(--accent-soft); color: var(--accent);">${esc(p.partNo)}</span>
                 <span class="font-mono-num text-[10px] font-bold shrink-0" style="color: var(--text-muted);">${p.qty} pcs</span>
               </div>
+              ${est.valid && est.bottleneck ? `<div class="text-[9.5px] font-semibold truncate" style="color: var(--amber-fg);">Min: ${esc(est.bottleneck)}</div>` : ""}
             </div>
           </button>
         `;
@@ -1700,6 +2014,8 @@
     function openCategoryModal(cat) {
       state.activeCategory = cat;
       document.getElementById("catSearchInput").value = "";
+      // Show quick Bulk Indicator button inside Loose (L/P) and Assy (A) modals
+      document.getElementById("catBulkBtn").classList.toggle("hidden", cat === "child");
       renderCategoryModal();
       openModal("categoryModal");
     }
@@ -1744,13 +2060,19 @@
               ? `<img src="${p.photo}" alt="${esc(p.name)}" class="w-full h-full object-contain cursor-pointer" onclick="openPhotoLightbox('${p.id}')" />`
               : `<span class="font-mono-num text-[10px] font-bold" style="color: var(--text-muted);">${p.type==='assy'?'A':p.type==='child'?'C/P':'L/P'}</span>`;
             const sub = p.type === "child" ? `Vendor: ${esc(p.vendor || "2nd Tier")}` : "In-House";
+            const commonPill = p.isCommon
+              ? `<span class="text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0" style="background: rgba(168,85,247,0.16); color: #9333ea; border: 1px solid rgba(168,85,247,0.32);">COMMON (L/R)</span>`
+              : "";
             return `
               <div class="surface-card rounded-2xl p-2.5 flex flex-col gap-2 w-full min-w-0">
                 <div class="flex items-start justify-between gap-2 min-w-0">
                   <div class="flex items-start gap-2.5 flex-1 min-w-0">
                     <div class="w-12 h-12 rounded-xl shrink-0 p-1 flex items-center justify-center overflow-hidden" style="background: var(--bg-elevated); border: 1px solid var(--border);">${thumb}</div>
                     <div class="flex-1 min-w-0">
-                      <span class="font-mono-num text-[10px] font-bold px-1.5 py-0.5 rounded-md inline-block max-w-full truncate" style="background: var(--accent-soft); color: var(--accent);">${esc(p.partNo)}</span>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono-num text-[10px] font-bold px-1.5 py-0.5 rounded-md truncate max-w-full" style="background: var(--accent-soft); color: var(--accent);">${esc(p.partNo)}</span>
+                        ${commonPill}
+                      </div>
                       <div class="text-xs font-bold leading-snug mt-1 break-words">${esc(p.name)}</div>
                       <div class="text-[10.5px] mt-0.5 truncate" style="color: var(--text-muted);">${sub} • L≤${p.lowThreshold} M≤${p.midThreshold}</div>
                     </div>
@@ -1824,7 +2146,7 @@
       state.calSelectedDate = date;
       const [y, mo] = date.split("-").map(Number);
       if (y && mo) { state.calYear = y; state.calMonth = mo - 1; }
-      persist();
+      persist(true);
       closeModal("eventModal");
       renderAll();
       showToast(t("savedMsg"), "success");
@@ -1836,7 +2158,7 @@
       if (!id) return;
       openConfirm("Delete Event?", "Remove this event from schedule?", () => {
         m.events = m.events.filter(e => e.id !== id);
-        persist();
+        persist(true);
         closeModal("eventModal");
         renderAll();
         showToast(t("deletedMsg"), "info");
@@ -2130,7 +2452,7 @@
         m.logs.unshift({ id: "lg_" + Date.now() + Math.random(), dateTime: dt, type: state.fastAction, partId: part.id, partNo: part.partNo, partName: part.name, qtyDelta: delta, remark });
       }
 
-      persist();
+      persist(true);
       closeModal("fastRecordModal");
       renderAll();
       showToast(t("savedMsg"), "success");
@@ -2150,6 +2472,7 @@
       document.getElementById("epQty").value = p ? p.qty : 0;
       document.getElementById("epLow").value = p ? p.lowThreshold : 20;
       document.getElementById("epMid").value = p ? p.midThreshold : 50;
+      document.getElementById("epIsCommon").checked = p ? Boolean(p.isCommon) : false;
       state.epPhoto = p ? (p.photo || "") : "";
       state.epBom = p && p.bom ? JSON.parse(JSON.stringify(p.bom)) : [];
       document.getElementById("epPhotoInput").value = "";
@@ -2258,6 +2581,7 @@
       const qty = Math.max(0, parseInt(document.getElementById("epQty").value, 10) || 0);
       const lowThreshold = Math.max(0, parseInt(document.getElementById("epLow").value, 10) || 0);
       const midThreshold = Math.max(lowThreshold, parseInt(document.getElementById("epMid").value, 10) || 0);
+      const isCommon = document.getElementById("epIsCommon").checked;
 
       if (!partNo || !name) return showToast("Fill Part No & Name.", "error");
 
@@ -2270,6 +2594,7 @@
         qty,
         lowThreshold,
         midThreshold,
+        isCommon,
         photo: state.epPhoto,
         bom: state.epCategory === "assy" ? state.epBom : []
       };
@@ -2281,7 +2606,7 @@
         m.parts.unshift(obj);
       }
 
-      persist();
+      persist(true);
       closeModal("partEditorModal");
       renderAll();
       showToast(t("savedMsg"), "success");
@@ -2294,7 +2619,7 @@
       openConfirm("Delete Part?", "Remove this part from inventory?", () => {
         m.parts = m.parts.filter(p => p.id !== id);
         m.parts.forEach(p => { if (p.bom) p.bom = p.bom.filter(b => b.partId !== id); });
-        persist();
+        persist(true);
         closeModal("partEditorModal");
         renderAll();
         showToast(t("deletedMsg"), "info");
@@ -2302,7 +2627,7 @@
     }
 
     /* -------------------------------------------------------------------------
-       EXCEL EXPORT (3 SHEETS FOR ACTIVE MODEL) & FULL JSON BACKUP / RESTORE
+       EXCEL EXPORT (3 SHEETS) & JSON BACKUP / RESTORE (AUTO-PUSH TO FIREBASE)
        ------------------------------------------------------------------------- */
     function openSettingsModal() {
       renderThemeSwatches();
@@ -2317,6 +2642,7 @@
         "Part No": p.partNo,
         "Part Name": p.name,
         "Category": p.type === "assy" ? "Assy (A)" : p.type === "child" ? "Child (C/P)" : "Loose (L/P)",
+        "Common (L/R)": p.isCommon ? "YES" : "NO",
         "Vendor": p.type === "child" ? (p.vendor || "2nd Tier Vendor") : "In-House",
         "Stock Qty": p.qty,
         "Status": getStatus(p),
@@ -2352,7 +2678,7 @@
     function exportBackupJSON() {
       const payload = {
         app: "STOCK RECORD",
-        version: "4.0",
+        version: "5.0",
         exportedAt: new Date().toISOString(),
         activeModelId: state.activeModelId,
         models: state.models
@@ -2377,9 +2703,11 @@
         try {
           const data = JSON.parse(ev.target.result);
           if (!Array.isArray(data.models) || !data.models.length) throw new Error("Invalid");
-          state.models = data.models;
-          state.activeModelId = data.activeModelId || data.models[0].id;
-          persist();
+          // Seamlessly normalize v4.0 or v5.0 JSON & auto-mark 61415 as isCommon: true
+          state.models = normalizeModels(data.models);
+          state.activeModelId = data.activeModelId || state.models[0].id;
+          // Save locally & immediately push to Firebase Cloud so all connected devices receive it
+          persist(true);
           renderAll();
           showToast(t("restoreDone"), "success");
         } catch (err) {
@@ -2424,7 +2752,7 @@
       el.textContent = msg;
       el.classList.add("show");
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => el.classList.remove("show"), 2300);
+      toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
     }
 
     window.addEventListener("DOMContentLoaded", initApp);
