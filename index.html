@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="STOCK RECORD" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#eef2f6" id="metaThemeColor" />
-  <title>STOCK RECORD v6.1</title>
+  <title>STOCK RECORD v6.1.1</title>
 
   <!-- Inter & JetBrains Mono Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -804,7 +804,7 @@
         </div>
 
         <div class="text-center text-[11px] font-medium pt-1" style="color: var(--text-muted);">
-          STOCK RECORD v6.1 • Firebase Live Sync + ExcelJS
+          STOCK RECORD v6.1.1 • Firebase Live Sync + ExcelJS
         </div>
       </div>
     </div>
@@ -1102,10 +1102,10 @@
   </div>
 
   <!-- TOAST -->
-  <div id="toast" class="px-4 py-2.5 rounded-full text-xs font-bold text-white shadow-xl max-w-[90vw] truncate"></div>
+  <div id="toast" class="px-4 py-2.5 rounded-2xl text-xs font-bold text-white shadow-xl max-w-[92vw] text-center break-words"></div>
 
   <!-- =========================================================================
-       APPLICATION LOGIC — STOCK RECORD v6.1
+       APPLICATION LOGIC — STOCK RECORD v6.1.1
        ========================================================================= -->
   <script>
     /* -------------------------------------------------------------------------
@@ -1670,7 +1670,7 @@
       lastLocalPushTs = nowTs;
       setSyncBadge("syncing");
       fbDataRef.set({
-        version: "6.1",
+        version: "6.1.1",
         updatedAt: nowTs,
         clientId: CLIENT_ID,
         activeModelId: state.activeModelId,
@@ -2989,8 +2989,87 @@
     }
 
     /* -------------------------------------------------------------------------
-       EXCELJS EXPORT (STRICTLY 100% ENGLISH ONLY + EMBEDDED PHOTOS + LIVE FORMULAS)
+       EXCELJS EXPORT (iOS SAFARI / PWA SAFE + 100% ENGLISH + MULTI-CDN)
        ------------------------------------------------------------------------- */
+    const EXCELJS_CDNS = [
+      "https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js",
+      "https://unpkg.com/exceljs@4.4.0/dist/exceljs.min.js"
+    ];
+
+    function loadScriptUrl(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = true;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error("Failed to load " + src));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function ensureExcelJS() {
+      if (window.ExcelJS && window.ExcelJS.Workbook) return window.ExcelJS;
+      for (const url of EXCELJS_CDNS) {
+        try {
+          await loadScriptUrl(url);
+          if (window.ExcelJS && window.ExcelJS.Workbook) return window.ExcelJS;
+        } catch (err) {
+          console.warn("ExcelJS CDN fallback:", url, err);
+        }
+      }
+      throw new Error("ExcelJS library could not be loaded. Check internet connection.");
+    }
+
+    function normalizeImageToJpegBase64(dataUrl) {
+      return new Promise(resolve => {
+        if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
+          resolve(null);
+          return;
+        }
+        const img = new Image();
+        let settled = false;
+        const finish = val => {
+          if (settled) return;
+          settled = true;
+          resolve(val);
+        };
+        const timer = setTimeout(() => finish(null), 4000);
+
+        img.onload = () => {
+          clearTimeout(timer);
+          try {
+            const cw = 114, ch = 78;
+            const canvas = document.createElement("canvas");
+            canvas.width = cw;
+            canvas.height = ch;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, cw, ch);
+
+            const scale = Math.min(cw / (img.width || cw), ch / (img.height || ch));
+            const dw = Math.max(1, Math.round((img.width || cw) * scale));
+            const dh = Math.max(1, Math.round((img.height || ch) * scale));
+            const dx = Math.floor((cw - dw) / 2);
+            const dy = Math.floor((ch - dh) / 2);
+            ctx.drawImage(img, dx, dy, dw, dh);
+
+            const cleanDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            const base64 = cleanDataUrl.replace(/^data:image\/jpeg;base64,/, "");
+            finish(base64 || null);
+          } catch (e) {
+            console.warn("Canvas image normalize failed:", e);
+            finish(null);
+          }
+        };
+        img.onerror = () => {
+          clearTimeout(timer);
+          finish(null);
+        };
+        img.src = dataUrl;
+      });
+    }
+
     function openExcelExportModal() {
       const m = getActiveModel();
       document.getElementById("excelModalSub").textContent = `Model: ${m.name} (${m.parts.length} parts)`;
@@ -3074,21 +3153,18 @@
     }
 
     async function generateStyledExcel() {
-      if (typeof ExcelJS === "undefined") {
-        return showToast("ExcelJS library offline.", "error");
-      }
-
       const btn = document.getElementById("btnGenerateExcel");
       btn.disabled = true;
-      btn.textContent = "Generating...";
+      btn.textContent = "Generating .xlsx...";
 
       try {
+        const ExcelLib = await ensureExcelJS();
         const m = getActiveModel();
         const { baseReq, label: eventLabel } = getComputedExcelReq();
         const nowStr = fmtDT(getLocalDateTimeValue());
 
-        const wb = new ExcelJS.Workbook();
-        wb.creator = "STOCK RECORD v6.1";
+        const wb = new ExcelLib.Workbook();
+        wb.creator = "STOCK RECORD v6.1.1";
         wb.created = new Date();
 
         const thinBorder = {
@@ -3141,7 +3217,7 @@
           // Row 3: Color Legend (100% English)
           ws.mergeCells("A3:G3");
           const r3 = ws.getCell("A3");
-          r3.value = "QTY Indicator (vs Total Req):  [RED] < 50% (LOW)  |  [YELLOW] 50% – 99% (MID)  |  [GREEN] >= 100% (OK)";
+          r3.value = "QTY Indicator (vs Total Req):  [RED] < 50% (LOW)  |  [YELLOW] 50% - 99% (MID)  |  [GREEN] >= 100% (OK)";
           r3.font = { name: "Calibri", size: 9.5, italic: true, color: { argb: "FFCBD5E1" } };
           r3.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF334155" } };
           r3.alignment = { vertical: "middle", horizontal: "left", indent: 1 };
@@ -3160,17 +3236,23 @@
 
           const parts = m.parts.filter(p => p.type === meta.type);
           const startRow = 5;
+          let sumQty = 0, sumReq = 0, sumShortage = 0;
 
-          parts.forEach((p, idx) => {
+          for (let idx = 0; idx < parts.length; idx++) {
+            const p = parts[idx];
             const rNum = startRow + idx;
             const row = ws.getRow(rNum);
-            row.height = 58;
+            row.height = 50;
 
             const mult = getPartMultiplier(p);
             const partReq = baseReq * mult;
             const qtyVal = Number(p.qty) || 0;
             const shortageVal = Math.max(0, partReq - qtyVal);
-            const nameBlock = `${p.name}\n${p.partNo}${mult > 1 ? ` [COMMON ×${mult}]` : ""}`;
+            sumQty += qtyVal;
+            sumReq += partReq;
+            sumShortage += shortageVal;
+
+            const nameBlock = `${p.name}\n${p.partNo}${mult > 1 ? ` [COMMON x${mult}]` : ""}`;
 
             row.getCell(1).value = idx + 1;
             row.getCell(2).value = p.photo ? "" : "-";
@@ -3189,95 +3271,69 @@
               cell.alignment = { vertical: "middle", horizontal: c === 3 ? "left" : "center", wrapText: true };
             }
 
-            // Static QTY Fill/Font Color based on Total Req
+            // Direct crash-proof Red/Yellow/Green fill & font on QTY cell
             const qtyCell = row.getCell(5);
-            let qBg = "FFD1FAE5", qFg = "FF065F46"; // GREEN (>=100%)
+            let qBg = "FFDCFCE7", qFg = "FF15803D"; // GREEN (>=100%)
             if (partReq > 0) {
               const ratio = qtyVal / partReq;
-              if (ratio < 0.5) { qBg = "FFFEE2E2"; qFg = "FF991B1B"; }       // RED (<50%)
-              else if (ratio < 1) { qBg = "FFFEF3C7"; qFg = "FF92400E"; }    // YELLOW (50-99%)
+              if (ratio < 0.5) { qBg = "FFFEE2E2"; qFg = "FFB91C1C"; }       // RED (<50%)
+              else if (ratio < 1) { qBg = "FFFEF3C7"; qFg = "FFB45309"; }    // YELLOW (50-99%)
             } else if (qtyVal === 0) {
-              qBg = "FFFEE2E2"; qFg = "FF991B1B";
+              qBg = "FFFEE2E2"; qFg = "FFB91C1C";
             }
             qtyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: qBg } };
             qtyCell.font = { name: "Calibri", size: 11, bold: true, color: { argb: qFg } };
 
             row.getCell(6).font = { name: "Calibri", size: 11, bold: true, color: { argb: "FF1E3A8A" } };
-            row.getCell(7).font = { name: "Calibri", size: 11, bold: true, color: { argb: shortageVal > 0 ? "FFDC2626" : "FF059669" } };
+            row.getCell(7).font = { name: "Calibri", size: 11, bold: true, color: { argb: shortageVal > 0 ? "FFB91C1C" : "FF15803D" } };
 
-            // Embed Part Photo in Col B (PIC)
-            if (p.photo && p.photo.startsWith("data:image/")) {
+            // Safe per-image normalization & embedding (never crashes export)
+            if (p.photo) {
               try {
-                const ext = p.photo.includes("image/png") ? "png" : "jpeg";
-                const imgId = wb.addImage({ base64: p.photo, extension: ext });
-                ws.addImage(imgId, {
-                  tl: { col: 1.12, row: rNum - 1 + 0.08 },
-                  ext: { width: 84, height: 64 },
-                  editAs: "oneCell"
-                });
-              } catch (imgErr) {
-                console.warn("Image embed skipped:", p.partNo, imgErr);
-              }
-            }
-          });
-
-          const endRow = startRow + parts.length - 1;
-
-          // Live Excel Conditional Formatting on QTY Column (E)
-          if (parts.length > 0) {
-            ws.addConditionalFormatting({
-              ref: `E${startRow}:E${endRow}`,
-              rules: [
-                {
-                  type: "expression",
-                  priority: 1,
-                  formulae: [`AND(F${startRow}>0, E${startRow}/F${startRow}<0.5)`],
-                  style: {
-                    fill: { type: "pattern", pattern: "solid", bgColor: { argb: "FFFEE2E2" } },
-                    font: { bold: true, color: { argb: "FF991B1B" } }
-                  }
-                },
-                {
-                  type: "expression",
-                  priority: 2,
-                  formulae: [`AND(F${startRow}>0, E${startRow}/F${startRow}>=0.5, E${startRow}<F${startRow})`],
-                  style: {
-                    fill: { type: "pattern", pattern: "solid", bgColor: { argb: "FFFEF3C7" } },
-                    font: { bold: true, color: { argb: "FF92400E" } }
-                  }
-                },
-                {
-                  type: "expression",
-                  priority: 3,
-                  formulae: [`AND(F${startRow}>0, E${startRow}>=F${startRow})`],
-                  style: {
-                    fill: { type: "pattern", pattern: "solid", bgColor: { argb: "FFD1FAE5" } },
-                    font: { bold: true, color: { argb: "FF065F46" } }
-                  }
+                const cleanB64 = await normalizeImageToJpegBase64(p.photo);
+                if (cleanB64) {
+                  const imgId = wb.addImage({ base64: cleanB64, extension: "jpeg" });
+                  ws.addImage(imgId, {
+                    tl: { col: 1.08, row: rNum - 0.92 },
+                    ext: { width: 76, height: 52 },
+                    editAs: "oneCell"
+                  });
+                } else {
+                  row.getCell(2).value = "-";
                 }
-              ]
-            });
-
-            // Bottom TOTAL Row (100% English)
-            const totRowNum = endRow + 1;
-            const totRow = ws.getRow(totRowNum);
-            totRow.height = 24;
-            ws.mergeCells(`A${totRowNum}:D${totRowNum}`);
-            totRow.getCell(1).value = `TOTAL (${parts.length} PARTS)`;
-            totRow.getCell(5).value = { formula: `SUM(E${startRow}:E${endRow})` };
-            totRow.getCell(6).value = { formula: `SUM(F${startRow}:F${endRow})` };
-            totRow.getCell(7).value = { formula: `SUM(G${startRow}:G${endRow})` };
-
-            for (let c = 1; c <= 7; c++) {
-              const cell = totRow.getCell(c);
-              cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
-              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
-              cell.alignment = { vertical: "middle", horizontal: c === 1 ? "right" : "center" };
-              cell.border = thinBorder;
+              } catch (imgErr) {
+                console.warn("Skipped image:", p.partNo, imgErr);
+                row.getCell(2).value = "-";
+              }
             }
           }
 
-          ws.autoFilter = { from: "A4", to: "G4" };
+          // Bottom TOTAL Row (safe for both non-empty and empty categories)
+          const totRowNum = startRow + parts.length;
+          const totRow = ws.getRow(totRowNum);
+          totRow.height = 24;
+          ws.mergeCells(`A${totRowNum}:D${totRowNum}`);
+          totRow.getCell(1).value = `TOTAL (${parts.length} PARTS)`;
+
+          if (parts.length > 0) {
+            const endRow = startRow + parts.length - 1;
+            totRow.getCell(5).value = { formula: `SUM(E${startRow}:E${endRow})`, result: sumQty };
+            totRow.getCell(6).value = { formula: `SUM(F${startRow}:F${endRow})`, result: sumReq };
+            totRow.getCell(7).value = { formula: `SUM(G${startRow}:G${endRow})`, result: sumShortage };
+            ws.autoFilter = { from: "A4", to: "G4" };
+          } else {
+            totRow.getCell(5).value = 0;
+            totRow.getCell(6).value = 0;
+            totRow.getCell(7).value = 0;
+          }
+
+          for (let c = 1; c <= 7; c++) {
+            const cell = totRow.getCell(c);
+            cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F172A" } };
+            cell.alignment = { vertical: "middle", horizontal: c === 1 ? "right" : "center" };
+            cell.border = thinBorder;
+          }
         }
 
         // Sheet 4: History (100% English)
@@ -3341,23 +3397,24 @@
             cell.alignment = { vertical: "middle", horizontal: (c === 5 || c === 8) ? "left" : "center" };
           }
 
-          // Color-code Action cell
           const actCell = row.getCell(6);
           if (l.type === "IN") {
-            actCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD1FAE5" } };
-            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF065F46" } };
+            actCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDCFCE7" } };
+            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF15803D" } };
           } else if (l.type === "NG") {
             actCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEE2E2" } };
-            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF991B1B" } };
+            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FFB91C1C" } };
           } else if (l.type === "OUT") {
             actCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFEF3C7" } };
-            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF92400E" } };
+            actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FFB45309" } };
           } else {
             actCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDBEAFE" } };
             actCell.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF1E40AF" } };
           }
         });
-        wsHist.autoFilter = { from: "A3", to: "H3" };
+        if (sortedLogs.length > 0) {
+          wsHist.autoFilter = { from: "A3", to: "H3" };
+        }
 
         const buffer = await wb.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -3368,13 +3425,13 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
 
         closeModal("excelExportModal");
         showToast(t("excelDone"), "success");
       } catch (err) {
         console.error("ExcelJS export error:", err);
-        showToast("Excel export failed.", "error");
+        showToast(`Excel export failed: ${err?.message || "Unknown error"}`, "error");
       } finally {
         btn.disabled = false;
         btn.textContent = t("btnDownloadXlsx");
@@ -3387,7 +3444,7 @@
     function exportBackupJSON() {
       const payload = {
         app: "STOCK RECORD",
-        version: "6.1",
+        version: "6.1.1",
         exportedAt: new Date().toISOString(),
         activeModelId: state.activeModelId,
         models: state.models
